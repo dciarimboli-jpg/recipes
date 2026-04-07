@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>My Recipe Box</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  :root {
+    --sage: #7c9473;
+    --sage-light: #e8efe6;
+    --sage-dark: #5a7252;
+    --cream: #faf8f5;
+    --warm-gray: #6b6560;
+    --warm-gray-light: #a8a29e;
+    --text: #3d3833;
+    --card-bg: #ffffff;
+    --border: #e7e5e0;
+    --accent: #c4956a;
+    --accent-light: #f5ece3;
+    --danger: #c0695a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  .app-container { max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+    color: white;
+    padding: 20px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .header-sub { font-size: 12px; opacity: 0.8; margin-top: 2px; font-weight: 400; }
+
+  /* Search */
+  .search-bar {
+    margin: 12px 20px 0;
+    position: relative;
+  }
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    outline: none;
+  }
+  .search-bar input::placeholder { color: rgba(255,255,255,0.6); }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.6;
+    font-size: 16px;
+  }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--warm-gray-light);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active { color: var(--sage); border-bottom-color: var(--sage); }
+  .tab-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+  /* Filter chips */
+  .filter-row {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--warm-gray);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .chip.active { background: var(--sage); color: white; border-color: var(--sage); }
+
+  /* Recipe cards */
+  .recipe-list { padding: 0 16px; }
+  .recipe-card {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border: 1px solid var(--border);
+  }
+  .recipe-card:active { transform: scale(0.98); }
+  .recipe-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+  .recipe-card h3 { font-size: 16px; font-weight: 600; color: var(--text); line-height: 1.3; flex: 1; }
+  .recipe-card .calories { font-size: 13px; color: var(--accent); font-weight: 600; white-space: nowrap; margin-left: 12px; }
+  .recipe-meta { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
+  .meta-tag { font-size: 12px; color: var(--warm-gray-light); display: flex; align-items: center; gap: 3px; }
+  .recipe-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .recipe-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--sage-light);
+    color: var(--sage-dark);
+    font-weight: 500;
+  }
+  .source-tag {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+
+  /* Recipe detail */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--cream);
+    z-index: 200;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .detail-header {
+    background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .back-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .detail-header h2 { font-size: 18px; font-weight: 600; line-height: 1.3; }
+  .detail-body { padding: 20px; }
+  .detail-meta-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .detail-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 14px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    min-width: 70px;
+  }
+  .detail-meta-item .value { font-size: 16px; font-weight: 700; color: var(--sage); }
+  .detail-meta-item .label { font-size: 11px; color: var(--warm-gray-light); margin-top: 2px; }
+  .detail-section { margin-bottom: 20px; }
+  .detail-section h3 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--sage);
+    margin-bottom: 10px;
+  }
+  .ingredient-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+  .ingredient-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .ingredient-check.checked { background: var(--sage); border-color: var(--sage); color: white; }
+  .instruction-item { padding: 10px 0; font-size: 15px; line-height: 1.5; border-bottom: 1px solid var(--border); display: flex; gap: 10px; }
+  .step-num { font-weight: 700; color: var(--sage); min-width: 24px; }
+  .cook-note { font-style: italic; color: var(--warm-gray); font-size: 14px; padding: 12px; background: var(--accent-light); border-radius: 10px; margin-top: 12px; line-height: 1.5; }
+  .add-to-list-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--sage);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  .add-to-list-btn:active { background: var(--sage-dark); }
+  .added-btn { background: var(--warm-gray-light); }
+
+  /* Shopping list */
+  .shopping-section { padding: 16px 20px; }
+  .shopping-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text); }
+  .shopping-recipe-group { margin-bottom: 16px; }
+  .shopping-recipe-name { font-size: 13px; font-weight: 600; color: var(--sage); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .shopping-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+  .shopping-item.crossed { text-decoration: line-through; color: var(--warm-gray-light); }
+  .clear-list-btn {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+  }
+  .remove-recipe-btn {
+    font-size: 18px;
+    color: var(--danger);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 4px;
+    opacity: 0.6;
+  }
+
+  /* Pantry search */
+  .pantry-section { padding: 16px 20px; }
+  .pantry-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .pantry-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    background: white;
+    outline: none;
+  }
+  .pantry-input:focus { border-color: var(--sage); }
+  .pantry-add-btn {
+    padding: 10px 16px;
+    background: var(--sage);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .pantry-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .pantry-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: var(--sage-light);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--sage-dark);
+    font-weight: 500;
+  }
+  .pantry-tag button { background: none; border: none; color: var(--sage-dark); font-size: 16px; cursor: pointer; padding: 0 2px; }
+  .match-score { font-size: 12px; color: var(--sage); font-weight: 600; }
+
+  /* Add recipe form */
+  .form-section { padding: 16px 20px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--warm-gray); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    background: white;
+    outline: none;
+    font-family: inherit;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--sage); }
+  .form-group textarea { min-height: 100px; resize: vertical; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row .form-group { flex: 1; }
+  .save-recipe-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--sage);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Nutrition row */
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .nutrition-item {
+    text-align: center;
+    padding: 8px;
+    background: var(--sage-light);
+    border-radius: 8px;
+  }
+  .nutrition-item .n-val { font-size: 15px; font-weight: 700; color: var(--sage-dark); }
+  .nutrition-item .n-label { font-size: 10px; color: var(--warm-gray); margin-top: 2px; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--warm-gray-light); }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; line-height: 1.5; }
+
+  /* Toast notification */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 300;
+    animation: slideUp 0.3s ease;
+    white-space: nowrap;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  .recipe-count { font-size: 13px; color: var(--warm-gray-light); padding: 8px 20px 4px; }
+  .serving-adjust { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .serving-btn { width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border); background: white; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .serving-btn:active { background: var(--sage-light); }
+  .serving-num { font-size: 16px; font-weight: 600; min-width: 60px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useEffect, useMemo, useCallback } = React;
+
+// ─── RECIPE DATABASE ───
+const INITIAL_RECIPES = [
+  {
+    id: 1, name: "Salmon with Miso-Honey Glaze", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 277,
+    category: "Seafood",
+    nutrition: {carbs: "16g", protein: "31g", fat: "8g", fiber: "0g", sodium: "387mg"},
+    ingredients: ["1/4 cup yellow miso","2 tablespoons mirin","2 tablespoons honey","1 tablespoon lime juice","1 1/4 pounds salmon filet, cut into 4 equal portions"],
+    instructions: ["Preheat grill or broiler.","In a small bowl, combine miso, mirin, honey, and lime juice. Mix to a smooth paste.","Spread 1 tablespoon paste on top of salmon fillet. Grill or broil to desired doneness."],
+    notes: "Feel free to add chopped garlic/ginger to the glaze. You can substitute the juice and zest of an orange for the mirin. The glaze is wonderful on pieces of tofu or roasted eggplant, as well."
+  },
+  {
+    id: 2, name: "Miso Soup", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4 (3/4 cup)", calories: 45,
+    category: "Soup",
+    nutrition: {carbs: "6g", protein: "trace", fat: "1g", fiber: "trace", sodium: "322mg"},
+    ingredients: ["1/3 cup chopped shallot or onion","1/2 teaspoon oil","1 quart vegetable stock or water","3 tablespoons miso paste","3 tablespoons sliced scallion","1/4 cup diced firm tofu","Pinch pepper","1/2 teaspoon sesame oil"],
+    instructions: ["In a medium saucepan, cook shallots until translucent in the oil.","Deglaze with vegetable stock or water and bring to a boil. Simmer 5 minutes, add tofu to heat through.","Place miso in a bowl and ladle on about 1/2 cup of broth. Stir to combine then add back into the pot.","Garnish with scallions & drizzle of sesame oil and serve."],
+    notes: "Use different types of miso to vary the flavor. For maximum nutrition, miso shouldn't be brought to the boil."
+  },
+  {
+    id: 3, name: "Grilled Chicken with Mustard & Basil", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "4", calories: 180,
+    category: "Poultry",
+    nutrition: {carbs: "1g", protein: "17g", fat: "5g", fiber: "0g", sodium: "475mg"},
+    ingredients: ["2 tablespoons Dijon mustard","1 teaspoon minced garlic","2 tablespoons balsamic vinegar","1/2 teaspoon salt","1/4 teaspoon black pepper","4 tablespoons chopped basil","4 skinless chicken breast halves, boned and defatted","1 teaspoon oil (optional)"],
+    instructions: ["In a small bowl, combine mustard, garlic, vinegar, salt, pepper, and basil. Mix well.","Coat chicken breasts with mixture (can marinate for 1 to 3 hours, if desired).","Preheat broiler.","Drizzle roasting pan with oil if desired. Broil chicken breast until cooked through, about 5 minutes on each side. Place chicken on lower rack of the broiler if getting too browned."],
+    notes: "Dijon mustard provides flavor as well as tenderizing the chicken breasts. Feel free to pound out the chicken breasts a little to speed up cooking time."
+  },
+  {
+    id: 4, name: "Chocolate Yogurt Mousse", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "8 (1/4 cup)", calories: 120,
+    category: "Dessert",
+    nutrition: {carbs: "19g", protein: "4g", fat: "7g", fiber: "1g", sodium: "15mg"},
+    ingredients: ["6 ounces (170g) dark chocolate chips","1/2 cup (120g) milk","1 cup (240g) Greek yogurt","2 teaspoons vanilla extract"],
+    instructions: ["Place chocolate in a medium bowl. Place milk in a medium saucepan. Set chocolate over the pan of milk and melt over medium heat.","Pour hot milk over the chocolate and stir to melt. Add vanilla.","Whisk in yogurt until all is combined. Serve 1/4 cup."],
+    notes: "Use this dreamy dessert with some chocolate cake as a base, or a dip for fresh fruits."
+  },
+  {
+    id: 5, name: "Bean & Feta Cheese Salad with Vegetable Medley and Tomato Vinaigrette", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4 salads", calories: 280,
+    category: "Salad",
+    nutrition: {carbs: "43g", protein: "12g", fat: "8g", fiber: "6g", sodium: "336mg"},
+    ingredients: ["2 large tomatoes, sliced in 8 slices","1 medium red bell pepper, cut into quarters","1 medium red onion, sliced","1 medium tomato, peeled and chopped (about 4 ounces) - for vinaigrette","1 teaspoon balsamic vinegar","1 tablespoon olive oil","1/4 teaspoon salt","1 head green leaf lettuce, cleaned and torn into medium pieces","1 cup cooked beans","1/2 cup feta cheese, crumbled"],
+    instructions: ["Preheat oven to 400°F. Lightly coat a sheet pan with olive oil.","Distribute tomatoes, red peppers, and red onions evenly and roast for 15 to 20 minutes or until edges begin to turn brown. Cool and remove skins from tomatoes and peppers. Slice peppers.","To prepare dressing, combine peeled tomato, balsamic vinegar, olive oil and salt in a blender container and puree until smooth.","Arrange 1/4 of lettuce on a large salad plate and sprinkle with 1/4 cup kidney beans. Top with 2 slices roasted tomato, 2 slices roasted onion and 2 slices roasted peppers. Drizzle 2 tablespoons dressing over salad and garnish with 2 tablespoons feta cheese."],
+    notes: ""
+  },
+  {
+    id: 6, name: "Chicken Piccata", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "4", calories: 165,
+    category: "Poultry",
+    nutrition: {carbs: "4g", protein: "27g", fat: "4g", fiber: "trace", sodium: "287mg"},
+    ingredients: ["1 tablespoon fresh lemon juice","1 tablespoon capers, packed in vinegar and salt, drained","1/2 cup chicken stock","1/4 cup all-purpose flour","4 skinless chicken breast halves, boned and defatted","2 teaspoons oil"],
+    instructions: ["In a small bowl, combine lemon juice, capers and chicken stock. Set aside.","Place flour in a large bowl. Dredge chicken breast in the flour.","Heat a large sauté pan with oil. Sauté chicken over medium heat until chicken is cooked through and golden brown, about 3 to 5 minutes on each side, or until juices run clear when pierced with a fork.","Add lemon juice mixture to pan and cook until sauce begins to thicken, about 2 minutes.","Serve immediately."],
+    notes: "This recipe can easily accommodate the addition of vegetables to the pan: wilt some spinach at the very last moment in the lemony sauce. Alternatively, add some broccoli florets or sliced peppers to cook for the last few minutes with the chicken."
+  },
+  {
+    id: 7, name: "Cauliflower Fried \"Rice\"", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "6 (1/2 cup)", calories: 95,
+    category: "Vegetable",
+    nutrition: {carbs: "19g", protein: "4g", fat: "trace", fiber: "2g", sodium: "197mg"},
+    ingredients: ["2 1/2 cups riced cauliflower","1/2 cup diced shallots or onion","1/4 cup diced scallions","1/4 cup diced carrots","1/4 cup frozen peas, defrosted","3 eggs","1/2 teaspoon turmeric","2 tablespoons chopped fresh basil","1 1/2 tablespoons low-sodium tamari"],
+    instructions: ["Pulse cauliflower in a food processor, or grate it with a box grater into tiny pieces.","Spray a large sauté pan or wok with nonstick vegetable spray. Stir-fry shallots, scallions, carrots, and red onion over medium heat until just tender. Add peas and mix well.","Move vegetables to the side of the pan and pour in eggs. Scramble eggs with turmeric and combine with vegetables.","Add cauliflower rice & basil and basil. Sprinkle tamari over rice and mix gently."],
+    notes: "Add whatever vegetables or proteins you like to bulk up this recipe to a full meal. Leftover cooked chicken or beef are great here, diced up. Tofu or shrimp can be cooked with the vegetables. Offer Asian chili paste on the side for those who like it with a kick!"
+  },
+  {
+    id: 8, name: "Sesame \"Ranch\" Dressing", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "6 (2 Tbsp)", calories: 60,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "1.4g", protein: "trace", fat: "5.6g", fiber: "trace", sodium: "84mg"},
+    ingredients: ["2 tablespoons yellow miso","3 tablespoons rice wine vinegar","1 1/2 tablespoons tahini","1/4 cup olive oil","1 teaspoon tamari","1 teaspoon sesame oil","1 teaspoon onion powder","Fresh ground pepper"],
+    instructions: ["Combine all ingredients in food processor or blender and puree until smooth."],
+    notes: "Nutrient-dense and delicious, savory & tangy dressing is great for crunchy lettuces, kale, or crudites. Different misos can give the dressing different flavors. If the dressing thickens up too much in the fridge, dilute with a bit of water."
+  },
+  {
+    id: 9, name: "Maple Pecan-Crusted Chicken", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "4", calories: 250,
+    category: "Poultry",
+    nutrition: {carbs: "10g", protein: "27g", fat: "8g", fiber: "1g", sodium: "101mg"},
+    ingredients: ["2 tablespoons maple syrup","2 tablespoons champagne vinegar","2 tablespoons diced shallots","1/2 cup chicken stock","2 teaspoons water","1/3 cup pecans","1/3 cup flour (can use gluten free flour)","1 tablespoon chopped herbs, if desired","1/2 teaspoon salt","1/4 teaspoon black pepper","2 teaspoons oil","1/3 cup whole pecans","1 egg white","1/4 teaspoon maple syrup","Pinch salt","Pinch ground cumin","Pinch cinnamon","Pinch chili powder","4 skinless chicken breast halves, boned and defatted"],
+    instructions: ["Combine syrup, vinegars and shallots in a small saucepan and bring to a boil. Reduce heat to a simmer and cook until liquid has reduced by 1/2. Add stock and bring back to a boil. Reduced to desired consistency. Strain, if desired.","Preheat oven to 350°. Combine all ingredients for candied pecans in a small bowl and mix well. Spread on a baking sheet which has been lined with parchment paper. Bake for 5 to 10 minutes or until nuts have browned. Cool and chop.","Increase oven temperature to 450°F. Lightly coat chicken crust, about 1 tablespoon per breast. Transfer chicken to oven and roast for about 20 minutes until reads 165°F on an instant-read thermometer. Serve 1 chicken breast with 2 tablespoons maple demi-glace and a sprinkle of candied pecans."],
+    notes: ""
+  },
+  {
+    id: 10, name: "Asian Steak Stir Fry", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Moderate", servings: "6 (4 oz)", calories: 546,
+    category: "Beef",
+    nutrition: {carbs: "45g", protein: "38g", fat: "17g", fiber: "7g", sodium: "552mg"},
+    ingredients: ["24 ounces flank steak","1 cup snow peas","1/2 cup carrots, half moons","1/2 cup peppers, yellow or red","6 oz tofu, hard organic","3/4 cup onions, red, julienne","2 tbsp tamari, low sodium, wheat free","1 tablespoon mirin or cooking wine","1 tablespoon oil","60g hoisin sauce","1/4 cup scallions, thinly sliced","2 tsp sesame seeds","3 cups cooked brown rice"],
+    instructions: ["Pan roast steak to desired temperature. Let beef rest.","In a hot saute pan add oil and add all veggies and saute just enough till veggies start to wilt. Add tofu and finish with soy and a drizzle of sesame oil.","Place 1/2 cup of cooked rice in each of 6 bowls. Slice Beef. Evenly divide the beef and vegetable mixture on top of the rice in each bowl. Drizzle Hoisin sauce on top. Garnish with scallions & sesame seeds."],
+    notes: "Hoisin Sauce: 90g brown sugar, 45g water, 45g black beans, 7.5g tamari low sodium, wheat free 300g ketchup, 15g sherry vinegar, 15g Worcestershire sauce. Bring to a simmer. Keeps for 2 weeks in the fridge."
+  },
+  {
+    id: 11, name: "Jammy Sweet Peppers", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "12", calories: 22,
+    category: "Vegetable",
+    nutrition: {carbs: "3g", protein: "1g", fat: "1g", fiber: "1g", sodium: "4mg"},
+    ingredients: ["1 onion, thinly sliced","2 red peppers, thinly sliced","2 garlic cloves, minced","2 tablespoons tomato paste","2 teaspoons brown sugar or honey","1 teaspoon oregano","1/2 teaspoon red chili flakes","2 tablespoons cold water","1 tablespoon vinegar","2 teaspoons olive oil"],
+    instructions: ["Heat sauce pan with olive oil. Add vegetables & sweat over medium heat until soft. Add the rest of the ingredients, lower heat, cover and simmer until jammy texture, about 30 minutes.","Check for seasoning."],
+    notes: "Substitute apple, pear, pineapple or peaches, if you prefer."
+  },
+  {
+    id: 12, name: "Chicken Parmesan with Roasted Vegetable Salad", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Moderate", servings: "4", calories: 353,
+    category: "Poultry",
+    nutrition: {carbs: "24g", protein: "36g", fat: "13g", fiber: "3g", sodium: "584mg"},
+    ingredients: ["1 teaspoon olive oil","1 tablespoon minced garlic","1/4 cup onions, julienne","2 cups zucchini, cubed","2 cups cherry tomatoes, cut in half","1/2 teaspoon salt","1 pinch black pepper","4 tablespoons balsamic vinegar","1 tablespoon fresh basil, chiffonade","1-pound chicken breasts, boneless-skinless","1 cup ground multigrain cereal","1 tablespoon dried basil","1 teaspoon dried oregano","1/4 teaspoon black pepper","1 teaspoon granulated garlic","1/4 cup all-purpose flour","1 whole egg, beaten","4-ounces mozzarella cheese, sliced"],
+    instructions: ["Preheat oven to 450 degrees-convection roast.","In a medium bowl combine oil, garlic, onion, zucchini, tomato, salt, pepper, and vinegar. Toss to combine, then transfer to a sheet pan lined with parchment and roasted at 450 degrees for about 10 minutes or until tomatoes start to break down.","Remove from oven and let cool slightly before topping with fresh basil. Set aside to cool.","Combine ground cereal with herbs, pepper and garlic. Set up a standard breading station with flour and egg.","With a meat mallet, pound chicken breasts on a flat surface between sheets of wax paper until about 1/4-inch thick.","Dredge each chicken breast in flour, then egg, then herbed breading. Lightly coat each breaded chicken on both sides with canola oil spray.","Place chicken breasts on a sheet pan and bake in the oven at 450 for 10-12 minutes, or until chicken is golden brown and has reached an internal temperature of 165°F.","Top each chicken breast with 1 ounce of mozzarella and return to oven until cheese is melted. About 1 minute.","Plate 1 chicken breast with a 1 cup of vegetable mixture and serve."],
+    notes: ""
+  },
+  {
+    id: 13, name: "Roasted Butternut Squash Soup", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "8 (6 oz)", calories: 110,
+    category: "Soup",
+    nutrition: {carbs: "23g", protein: "4g", fat: "3g", fiber: "2g", sodium: "50mg"},
+    ingredients: ["1 butternut squash","1 medium onion, minced","1 small clove garlic, minced","1 carrot, diced","1 stick celery, diced","1 teaspoon olive oil","1/4 cup white wine","2 cups stock (or water)","1 can light coconut milk","1/4 teaspoon salt","1/4 teaspoon pepper","2 branches fresh thyme, or 1/2 teaspoon dry","Toasted pumpkin seeds","Extra virgin olive oil drizzle"],
+    instructions: ["Heat oven to 450°F. Peel, cut, dice and roast butternut squash until tender, about 30 minutes. Reserve.","In a medium saucepan over low heat, sauté onion, garlic, carrots, celery in olive oil, being careful not to burn. Add wine to deglaze the pan.","Add squash, salt, pepper, thyme, and stock or water and cook until soft enough to blend. Pour into blender container and blend until smooth.","Add coconut milk and continue to process until well mixed. Divide among 4 bowls and garnish with drizzle of olive oil, sprinkle of seeds, and a pinch of cracked black pepper."],
+    notes: ""
+  },
+  {
+    id: 14, name: "Matzo Balls (Knaidlach)", source: "Canyon Ranch",
+    time: "60 min", difficulty: "Moderate", servings: "22 balls", calories: 35,
+    category: "Soup",
+    nutrition: {carbs: "5g", protein: "2g", fat: "trace", fiber: "0g", sodium: "68mg"},
+    ingredients: ["5 egg whites, whisked","1 tablespoon canola oil","3 tablespoons minced dill","1 tablespoon minced chives","1 cup matzo meal","1/2 teaspoon salt","1/2 cup club soda","1/2 teaspoon cracked black pepper","4 quarts water"],
+    instructions: ["In a large bowl, combine all ingredients, except water, together. Mix well.","Cover bowl with plastic wrap and refrigerate for 1/2 hour.","In a large pot, bring 4 quarts of water to a boil.","Remove mix from refrigerator. With damp hands shape dough into walnut shaped balls, dropping each one into boiling water.","Allow to boil for 1/2 hour. Remove knaidlach from pot with a slotted spoon. Cover and refrigerate until needed. Serve warm."],
+    notes: ""
+  },
+  {
+    id: 15, name: "Lentil & Swiss Chard Soup", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "12 (6 oz)", calories: 127,
+    category: "Soup",
+    nutrition: {carbs: "20g", protein: "7g", fat: "2g", fiber: "4g", sodium: "257mg"},
+    ingredients: ["1 teaspoon olive oil","1 cup diced yellow onions","1/2 cup diced carrot","1/2 cup diced celery","1 tablespoon minced garlic","4 cups sliced swiss chard","1 quart vegetable stock or water","3/4 cup brown lentils","1 cup diced potatoes","1/4 teaspoon black pepper","1/2 teaspoon sea salt","Pinch red pepper flakes","1 1/2 tablespoons fresh lemon juice","2 teaspoons tamari","1 tablespoon chopped parsley","3/4 cup diced tempeh bacon"],
+    instructions: ["In a large soup pan, sauté onion, carrot, celery and garlic oil over medium heat until translucent, about 2 to 3 minutes.","Add chard, sauté five more minutes. Add water or stock, lentils & potatoes, salt, pepper, and red pepper flakes and simmer until cooked through.","Finish with lemon juice & tamari. Serve with a sprinkle of parsley. Can finish with 1 tablespoon broiled tempeh bacon per serving."],
+    notes: "Tempeh Bacon: marinate 3/4 cup tempeh cubes in 2 tablespoons tamari, 1 teaspoon brown sugar, 1/2 teaspoon paprika, dash liquid smoke."
+  },
+  {
+    id: 16, name: "Peanut Butter Chocolate Yogurt Smoothie", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "1", calories: 190,
+    category: "Beverage",
+    nutrition: {carbs: "24g", protein: "15g", fat: "5g", fiber: "2g", sodium: "60mg"},
+    ingredients: ["1/2 cup non-fat plain yogurt","1/2 tablespoon peanut butter (or sub tahini or almond butter; or 2 tablespoons PB2 powder)","1/2 cup skim milk","1/2 banana","1 tablespoon cocoa powder","1/4 cup chopped ice"],
+    instructions: ["Combine all ingredients in a blender container and mix until smooth."],
+    notes: "Substitute 3/4 cup kefir in place of yogurt and milk."
+  },
+  {
+    id: 17, name: "Chocolate Almond Butter Delight", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "10 (2 Tbsp)", calories: 65,
+    category: "Dessert",
+    nutrition: {carbs: "5g", protein: "5g", fat: "4g", fiber: "trace", sodium: "12mg"},
+    ingredients: ["1 cup nonfat ricotta cheese","2 teaspoons pure vanilla extract","1/2 teaspoon ground cinnamon","1 1/2 tablespoons honey","1/4 cup almond butter (without added salt)","2 tablespoons cocoa powder"],
+    instructions: ["Combine all ingredients in food processor or blender and puree until smooth."],
+    notes: "Substitute peanut or any nut butter for the almond butter. Substitute Greek yogurt of Skyr for the ricotta."
+  },
+  {
+    id: 18, name: "Chocolate Hazelnut Dessert Hummus", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "10 (2 oz)", calories: 123,
+    category: "Dessert",
+    nutrition: {carbs: "21g", protein: "5g", fat: "3g", fiber: "2g", sodium: "88mg"},
+    ingredients: ["15 ounces canned chickpeas, drained","3 tablespoons cocoa powder","3 tablespoons maple syrup","1/3 cup chopped, toasted hazelnuts, or other nuts or seeds","2 tablespoons water – or more for texture","1 teaspoon vanilla extract","Apple slices","Pear slices","5 pita breads","2 tablespoons cinnamon sugar"],
+    instructions: ["Combine hummus ingredients in food processor and blend. Taste for seasoning.","Heat oven to 350°F. Cut pitas into wedges and spread on a cookie sheet. Sprinkle with cinnamon sugar and bake in the oven until lightly browned and crispy."],
+    notes: "This hummus can be served with pita bread toasted with cinnamon sugar, or apple, or pear slices."
+  },
+  {
+    id: 19, name: "Beef Tenderloin with Adobo Paste", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 215,
+    category: "Beef",
+    nutrition: {carbs: "7g", protein: "25g", fat: "10g", fiber: "trace", sodium: "112mg"},
+    ingredients: ["1 tablespoon packed brown sugar","1 tablespoon fresh lime juice","1 clove garlic, minced","1 tablespoon chili powder","16 ounces beef tenderloin, cut into 4 equal portions","1 teaspoon oil (optional)"],
+    instructions: ["Preheat grill or broiler.","In a small bowl, combine brown sugar, lime juice, garlic, and chili powder. Mix to a smooth paste.","Spread 1 teaspoon paste on each side of beef tenderloin fillet. Drizzle oil on roasting pan, if desired. Grill or broil to desired doneness, about 3 to 5 minutes on each side. Serve with Whipped Potatoes or Brown Rice and 1/2 cup vegetable."],
+    notes: "The adobo sauce can be made in a larger quantity and stored in the refrigerator for up to 2 weeks. It can also be used to flavor chicken and fish. This recipe contains no salt at all. Feel free to adjust to your taste."
+  },
+  {
+    id: 20, name: "Apple Chia Seed Pudding", source: "Canyon Ranch",
+    time: "30 min (or overnight)", difficulty: "Easy", servings: "6 (3/4 cup)", calories: 105,
+    category: "Breakfast",
+    nutrition: {carbs: "14g", protein: "3g", fat: "4g", fiber: "4g", sodium: "21mg"},
+    ingredients: ["1 cup almond milk, plain","1/4 cup apple juice, organic","1 tsp vanilla extract","1/2 tsp ground cinnamon","1/3 cup chia seeds"],
+    instructions: ["Whisk together almond milk, apple juice, vanilla, and cinnamon until smooth.","Add in chia seeds and whisk together (seeds will settle to bottom — every few minutes keep whisking until they start to expand).","Place in the refrigerator overnight.","Small dice apple to garnish."],
+    notes: "This is such a versatile recipe! Use whatever kind of milk or juice you have on hand or prefer. You can even use brewed tea or cold brew coffee if you like! Mix with any spices you prefer, or use chopped fresh herbs such as mint. Keep it in the refrigerator for up to 4 days."
+  },
+  {
+    id: 21, name: "Stir Fry Sauce", source: "Canyon Ranch",
+    time: "5 min", difficulty: "Easy", servings: "6 (2 Tbsp)", calories: 30,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "6g", protein: "1g", fat: "trace", fiber: "trace", sodium: "364mg"},
+    ingredients: ["1/4 cup low-sodium tamari sauce","2 tablespoons rice vinegar","2 tablespoons minced garlic","2 tablespoons ginger","2 tablespoons brown sugar","1 tablespoon sesame oil","Pinch red pepper flakes"],
+    instructions: ["Combine all ingredients and mix well."],
+    notes: "Five ingredients, one all-purpose stir-fry sauce for any proteins or vegetables you want to use. Make a large batch and keep in the fridge for quick meals on demand! Ginger juice can be made by grating ginger and pressing it through a fine sieve. Alternatively, substitute minced ginger for the juice."
+  },
+  {
+    id: 22, name: "Soft Corn Polenta", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4 (1/3 cup)", calories: 120,
+    category: "Side Dish",
+    nutrition: {carbs: "13g", protein: "5g", fat: "5g", fiber: "1g", sodium: "108mg"},
+    ingredients: ["3 tablespoons finely minced onion","1 tablespoon unsalted butter","3 tablespoons soft corn, cut from the cob, or frozen corn kernels","1 1/4 cup 2% milk","1/4 cup polenta","1/4 teaspoon sea salt","Pinch freshly ground black pepper","2 tablespoons grated Parmesan cheese"],
+    instructions: ["In a large saucepan, sauté onion in butter over medium heat until translucent.","Add corn and sauté briefly, about 30 seconds.","Add milk and bring to a boil.","Using a wire whip, lightly whisk in polenta, salt and pepper. Cook until thickened, about 3 minutes.","Add cheese and stir until melted. Serve 1/3 cup."],
+    notes: "Add seasonal vegetables to this polenta while it's cooking, or as a topping at the end. You can also make extra and let it set in the fridge overnight, cut it the next day into slices and fry it crispy for a different take. For a creamier consistency, add more milk 1/4 cup at a time."
+  },
+  {
+    id: 23, name: "Spicy Peanut & Shrimp Salad", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "4", calories: 410,
+    category: "Seafood",
+    nutrition: {carbs: "50g", protein: "33g", fat: "8g", fiber: "6g", sodium: "714mg"},
+    ingredients: ["1/4 cup white or yellow miso","1/3 cup rice wine vinegar","2 tablespoons peanut butter","2 tablespoons water","1 tablespoon honey","Pinch chili flakes","4 egg wontons or egg roll wrappers","3 cups shredded napa cabbage","1 cup sliced red onion","1 cup thinly sliced carrots","1 cup broccoli florets","16 cooked shrimp, 16/20 size"],
+    instructions: ["Combine all ingredients for dressing in a blender container and puree until smooth. Set aside.","Preheat oven to 400°. Lightly coat a baking sheet with sesame oil. Cut wontons in half to form triangles and distribute over baking sheet.","Place wontons in oven for 8 to 10 minutes until wrappers are golden brown.","Combine cabbage, red onion, carrots and broccoli in a large bowl. Toss with dressing.","Divide into 4 equal servings and top with 2 baked wontons and 4 shrimp."],
+    notes: ""
+  },
+  {
+    id: 24, name: "Sourdough Discard Granola", source: "Canyon Ranch",
+    time: "60 min", difficulty: "Moderate", servings: "25 (3 Tbsp)", calories: 165,
+    category: "Breakfast",
+    nutrition: {carbs: "17g", protein: "6g", fat: "9g", fiber: "4g", sodium: "141mg"},
+    ingredients: ["250 gm (1 cup) sourdough starter","50 gm (1/4 cup) olive oil","50 gm (1/4 cup) coconut sugar","1 tablespoon vanilla extract","1 teaspoon cinnamon","360 gm (2 1/2 cups) rolled oats","215 gm mixed nuts of choice","100 gm sunflower seeds","80 gm chia seeds","50 gm hemp seeds","1 teaspoon salt"],
+    instructions: ["Heat oven to 275°F.","Combine all ingredients well.","Spread out on parchment-lined sheets pans in thin layers for an even bake.","Toast 40 minutes, stirring every 10 minutes, until crispy and browned.","You can leave granola to cool in oven to remove any lingering moisture."],
+    notes: ""
+  },
+  {
+    id: 25, name: "Beef, Broccolini, & Parsley Chimichurri", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Moderate", servings: "10 (4 oz)", calories: 317,
+    category: "Beef",
+    nutrition: {carbs: "17g", protein: "38g", fat: "11g", fiber: "5g", sodium: "200mg"},
+    ingredients: ["40 ounces steak","1/4 cup chopped Italian parsley","1/4 cup extra virgin olive oil","2 tablespoons water","2 tablespoons minced shallots","2 tablespoons minced garlic","1 teaspoon dried oregano","1 tablespoon red wine vinegar","1/2 teaspoon sea salt","1 cup sliced shallots","2/3 cup distilled white vinegar","1/3 cup water","1 tablespoon sugar","1 teaspoon salt","1 teaspoon black peppercorns","1 tablespoon mustard seeds","Pinch red pepper flakes","3 bunches blanched broccolini","1 teaspoon olive oil","1/4 teaspoon salt","Pinch pepper"],
+    instructions: ["Pan roast, broil, or grill steak to desired temperature. Let beef rest.","Combine Chimichurri ingredients in a bowl or blender to mix.","Heat oven to 400°F. Place blanched broccolini on a roasting pan. Season with olive oil, salt and pepper and briefly roast until hot and starting to brown, 5-10 minutes.","Heat all ingredients except shallots in a small saucepan to boil. Pour over shallots and allow to steep 5 minutes. Pickled shallots will keep in the refrigerator up to 6 weeks."],
+    notes: ""
+  },
+  {
+    id: 26, name: "Artisan Wheat Bread", source: "Canyon Ranch",
+    time: "24 hrs (30 min active)", difficulty: "Moderate", servings: "1 loaf (13 slices)", calories: 105,
+    category: "Bread/Baking",
+    nutrition: {carbs: "21g", protein: "3g", fat: "3g", fiber: "2g", sodium: "226mg"},
+    ingredients: ["200g whole wheat flour (or any heirloom whole grain flour)","120g high extraction flour (or use 60g more whole wheat/60g more high gluten flour)","80g high gluten/bread flour","100g starter","292g warm water","10g salt"],
+    instructions: ["Combine warm water & starter; starter should float if it's ready to make bread.","Add flours & bring dough together, 4-5 minutes of gentle turning with a bowl scraper. Add salt and mix until just incorporated. Rest 30 minutes, then fold dough by pulling one corner out gently and folding it back into the middle, turning the dough and repeating until you have done the full circle of dough (4-5 folds). Wait 15-30 mins and repeat the folding process 2-3 more times. Rest 1 hour then shape dough. Place shaped bread in a napkin and cover. Put in fridge overnight.","The next day, pull out bread to come to room temp. Meanwhile, heat Dutch oven to 500°F. Place dough in Dutch oven and cover 20 minutes. Remove cover and bake another 15-20 minutes."],
+    notes: "A classic \"no-knead\" sourdough bread that can work around your schedule. Start it the day before and let the dough rise overnight in the fridge."
+  },
+  {
+    id: 27, name: "Feeding the Sourdough Starter", source: "Canyon Ranch",
+    time: "5 min", difficulty: "Easy", servings: "N/A", calories: 0,
+    category: "Bread/Baking",
+    nutrition: {carbs: "-", protein: "-", fat: "-", fiber: "-", sodium: "-"},
+    ingredients: ["1/4 cup (50g) starter","1/2 cup (75g) flour","1/3 cup (100g) water"],
+    instructions: ["Mix together the ingredients and place in a clean container. If you're planning on using the starter the same day, or are reactivating the starter after a long dormant period, you can leave out on the counter. Otherwise, store it in the fridge.","Feel free to divide the starter and feed a part of it another kind of flour, such as rye or einkorn, so you have different starters for different breads!"],
+    notes: "Sourdough does need to be used occasionally, and each time you use it you need to save some back and feed it fresh water and flour. If the starter has developed a gray film on top, just scrape off that layer and use what's underneath."
+  },
+  {
+    id: 28, name: "Sourdough Discard Einkorn Crackers", source: "Canyon Ranch",
+    time: "30 min active", difficulty: "Moderate", servings: "40 crackers (2 per serving)", calories: 35,
+    category: "Bread/Baking",
+    nutrition: {carbs: "5g", protein: "1g", fat: "1g", fiber: "1g", sodium: "45mg"},
+    ingredients: ["1/2 cup (70g) all-purpose einkorn flour (or all-purpose flour)","1/2 cup (70g) high-extraction flour (or whole wheat flour)","200g sourdough starter","4 tablespoons (55g) melted butter (or 3 T olive oil for vegan)","1 teaspoon (5g) salt"],
+    instructions: ["Preheat oven to 400°F.","In medium mixing bowl, combine all ingredients and then knead together to a smooth dough.","Divide dough into 4 balls. Let dough rest 10-15 minutes, covered. Roll out each ball separately into a wide circle between 2 sheets of parchment paper to get very thin. Remove top sheet of paper, prick the dough all over with a fork and use a chef's knife to cut like a pie into 16 triangles (no need to separate the triangles; they won't expand as they bake). Slide parchment onto a baking sheet and bake crackers 10-12 minutes until nicely browned."],
+    notes: ""
+  },
+  {
+    id: 29, name: "Sourdough Discard Chocolate Chip Cookies", source: "Canyon Ranch",
+    time: "30 min active", difficulty: "Moderate", servings: "60 cookies", calories: 129,
+    category: "Dessert",
+    nutrition: {carbs: "17g", protein: "2g", fat: "6g", fiber: "1g", sodium: "43mg"},
+    ingredients: ["185 gm unsalted butter, browned & cooled slightly","200 gm sugar","200 gm brown sugar","3 egg yolks","5 gm vanilla extract","240 gm sourdough starter","380 gm all-purpose flour","4 gm baking powder","3 gm baking soda","2 gm sea salt","500 gm chocolate chips"],
+    instructions: ["Heat oven 375°F (when ready to bake; dough can rest in fridge or freezer for better texture/spread).","First make the browned butter. You have to start with more butter to end up with 185 grams. Melt butter and boil over medium/high heat until it melts, bubbles, and then foams. Keep an eye on it after this point so that it doesn't burn. Remove from the heat when it is golden and smells toasty. Let cool, then weigh 185g.","Mix flour, baking soda, baking powder together in medium bowl with a whisk.","In a large bowl, whisk melted butter, sugars and vanilla. Whisk in the eggs. Whisk in the starter. Stir in dry mixture and whisk briskly for 45 seconds. Add the chips. At this point you can let the dough rest/chill in the fridge for 1-2 hours or overnight (can also form into logs and freeze). Scoop teaspoon-size rounds.","Line baking sheets with parchment paper. Space rounds 1 inch apart on baking sheets. Bake 8-12 mins until just firm to the touch."],
+    notes: ""
+  },
+  {
+    id: 30, name: "Neapolitan Sourdough Pizza Crust", source: "Canyon Ranch",
+    time: "3 hrs (30 min active)", difficulty: "Moderate", servings: "2 pizza crusts", calories: 130,
+    category: "Bread/Baking",
+    nutrition: {carbs: "5g", protein: "2g", fat: "1g", fiber: "1g", sodium: "90mg"},
+    ingredients: ["375 gm warm water","100 gm active sourdough starter","10 gm salt","500 gm flour - blend or just all-purpose or bread flour"],
+    instructions: ["Mix the dough: Place the starter, salt, and water in a large bowl. Stir with a spatula to combine. Add the flour. Mix again until the flour is completely incorporated. Transfer to a vessel with tea towel or cloth bowl cover and let stand 30 minutes.","Stretch and fold: after 30 minutes have passed, reach into the vessel and pull the dough up and into the center. Turn the vessel quarter turns and continue this pulling 8 to 10 times. Let the dough rest for another 30 minutes; then repeat. If possible, repeat this cycle twice more for a total of 4 stretch and folds.","Bulk fermentation: Cover vessel and set aside to rise at room temperature for 4 to 18 hours until the dough has roughly doubled in volume.","Portion and shape: Turn the dough out onto a work surface and shape into a rough ball. Divide the dough into 4 equal portions. Roll each portion into a ball. Transfer each round of dough to a plastic quart container, cover, and store in fridge for at least 6 hours or up to 3 days.","Make the pizzas: Pull out a round of dough from the fridge before you plan on baking. Set oven to 550°F. Heat oven for at least 45 minutes. Shape dough into a 10-inch round and bake on parchment until blistered, about 5-6 minutes."],
+    notes: "Top and Bake options: Classic Margherita-style with tomato sauce, mozzarella, parmesan, and olive oil. Or kale and crème fraîche pizza with minced garlic and Parmigiano Reggiano."
+  },
+  {
+    id: 31, name: "Sprouted Multigrain Bread", source: "Canyon Ranch",
+    time: "3 hrs (30 min active)", difficulty: "Moderate", servings: "2 loaves", calories: 110,
+    category: "Bread/Baking",
+    nutrition: {carbs: "20g", protein: "4g", fat: "1g", fiber: "2g", sodium: "191mg"},
+    ingredients: ["1 cup plus 2 tablespoons (234 gm) warm water","1 tablespoon (12 gm) active dry yeast","1/4 cup (63 gm) honey","2 tablespoons (32 gm) molasses","3/4 cup (250 gm) cooked multi grain cereal","2 1/4 cups (300 gm) bread flour/hi-gluten flour","2 cups (230 gm) whole wheat flour","1/4 cup (35 gm) vital wheat gluten flour","1 tablespoon (14 gm) salt","3/4 cup sprouted grains such as quinoa, amaranth, barley, spelt and millet"],
+    instructions: ["Preheat oven to 375°F when ready to bake.","Pour water into large mixing bowl, stir in yeast, honey & molasses. Let sit until yeast is foamy, about 5 minutes.","Add cooked cereal & dry ingredients and stir until mixture forms a mass and is no longer sticky. Knead dough on a flat surface until smooth and elastic, about 5 minutes. Add the sprouted whole grains and continue to knead until combined.","Place dough ball in a bowl and cover with damp cloth. Let rise in a warm place for about 1-2 hours until doubled inside.","Punch down the dough and divide in half. Roll dough into smooth oblong shapes that fit into lightly greased bread pans.","Allow bread to rise again until dough rises 2 inches above the rim of bread pan, about 30 minutes. Bake for 40-45 minutes until a probe thermometer reads 180-200°F. Let loaves cool on a wire rack for 20 additional minutes before slicing."],
+    notes: ""
+  },
+  {
+    id: 32, name: "Hot Chocolate", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4 (1/4 cup)", calories: 100,
+    category: "Beverage",
+    nutrition: {carbs: "15g", protein: "2g", fat: "4g", fiber: "trace", sodium: "73mg"},
+    ingredients: ["2 tablespoons chopped dark chocolate","1 cup fat free skim milk, or other milk"],
+    instructions: ["In a medium saucepan add chocolate chips and milk.","Heat milk whisking to blend chocolate with the milk. Let boil up 3 times to make thicker & richer."],
+    notes: "Add spices to make this drink even more comforting and anti-inflammatory. Cinnamon, cardamom, chili, nutmeg..."
+  },
+  {
+    id: 33, name: "Chocolate Truffles", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "20 truffles", calories: 50,
+    category: "Dessert",
+    nutrition: {carbs: "6g", protein: "1g", fat: "2g", fiber: "trace", sodium: "14mg"},
+    ingredients: ["1/3 cup evaporated skim milk, or other milk","1 cup dark chocolate, chopped","1/2 cup chopped dried cherries, or other dried fruit or nuts","3 tablespoons cocoa, toasted coconut, or chopped nuts or seeds"],
+    instructions: ["In a small saucepan, heat milk. Off of the heat, add chocolate and stir together until chocolate is completely melted. Mix in chopped cherries. Allow to cool/set (can make ahead and refrigerate).","Portion chocolate using a scant 1 tablespoon measure into 1-inch round balls and roll in palm of hand. Coat with cocoa and place on sheet pan 1-inch apart. Refrigerate until ready to serve."],
+    notes: "The most decadent way to enjoy anti-inflammatory, dark chocolate. The better quality of chocolate that you use, the better your truffles will be. Truffles may also be rolled in chopped nuts or coconut."
+  },
+  {
+    id: 34, name: "Chocolate Orange Chia Pudding", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "5 (2 oz)", calories: 174,
+    category: "Dessert",
+    nutrition: {carbs: "19g", protein: "5g", fat: "9g", fiber: "5g", sodium: "23mg"},
+    ingredients: ["1 tablespoon orange juice, fresh squeezed","1 cup almond milk, plain","1/2 teaspoon maple syrup","2 tablespoons cocoa powder","1/4 cup chia seeds","1/2 teaspoon orange zest","1 orange, peeled and segmented","2 ounces dark chocolate"],
+    instructions: ["In a medium bowl combine orange juice, almond milk, maple syrup and cocoa powder. Stir to combine and mix until smooth.","Whisk in chia seeds and orange zest, and mix until pudding begins to thicken.","Refrigerate overnight to allow pudding set.","Garnish with orange segment and shaved dark chocolate."],
+    notes: ""
+  },
+  {
+    id: 35, name: "Chocolate Dream Chiffon", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "12", calories: 95,
+    category: "Dessert",
+    nutrition: {carbs: "20g", protein: "4g", fat: "1g", fiber: "1g", sodium: "43mg"},
+    ingredients: ["1 package organic tofu, or 4 ripe avocados","3/4 cup honey","3 teaspoons vanilla extract","1/2 cup cocoa powder"],
+    instructions: ["In a food processor, soften tofu until creamy. Combine honey, cocoa and vanilla and add to tofu. Blend for 1 minute. Pour into dessert cups and chill."],
+    notes: "Use this dreamy dessert with some chocolate cake as a base, or a dip for fresh fruits. Swapping 4 avocados for the tofu yields a thicker dessert full of healthy fat & fiber. Calories do increase. Expect about 157 calories per serving."
+  }
+];
+
+const CATEGORIES = ["All", "Poultry", "Beef", "Seafood", "Soup", "Salad", "Vegetable", "Side Dish", "Sauce/Dressing", "Breakfast", "Bread/Baking", "Dessert", "Beverage"];
+
+function App() {
+  const [recipes, setRecipes] = useState(() => {
+    try {
+      const saved = window._recipeData;
+      return saved || INITIAL_RECIPES;
+    } catch { return INITIAL_RECIPES; }
+  });
+  const [activeTab, setActiveTab] = useState("browse");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [shoppingList, setShoppingList] = useState([]);
+  const [checkedItems, setCheckedItems] = useState({});
+  const [pantryItems, setPantryItems] = useState([]);
+  const [pantryInput, setPantryInput] = useState("");
+  const [toast, setToast] = useState(null);
+  const [checkedIngredients, setCheckedIngredients] = useState({});
+  const [servingMultiplier, setServingMultiplier] = useState(1);
+
+  // Save recipes to a global so we don't lose them
+  useEffect(() => { window._recipeData = recipes; }, [recipes]);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  };
+
+  // Filtered recipes
+  const filtered = useMemo(() => {
+    let list = recipes;
+    if (category !== "All") list = list.filter(r => r.category === category);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.ingredients.some(i => i.toLowerCase().includes(q)) ||
+        r.category.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [recipes, category, search]);
+
+  // Pantry matches
+  const pantryMatches = useMemo(() => {
+    if (pantryItems.length === 0) return [];
+    return recipes.map(r => {
+      const matched = pantryItems.filter(p =>
+        r.ingredients.some(i => i.toLowerCase().includes(p.toLowerCase()))
+      );
+      return { ...r, matchCount: matched.length, matchedItems: matched };
+    }).filter(r => r.matchCount > 0).sort((a, b) => b.matchCount - a.matchCount);
+  }, [recipes, pantryItems]);
+
+  const addToShoppingList = (recipe) => {
+    if (shoppingList.find(r => r.id === recipe.id)) {
+      showToast("Already on your list!");
+      return;
+    }
+    setShoppingList(prev => [...prev, recipe]);
+    showToast("Added to shopping list!");
+  };
+
+  const removeFromShoppingList = (id) => {
+    setShoppingList(prev => prev.filter(r => r.id !== id));
+    const newChecked = {...checkedItems};
+    Object.keys(newChecked).forEach(k => { if (k.startsWith(id + "-")) delete newChecked[k]; });
+    setCheckedItems(newChecked);
+  };
+
+  const toggleShoppingItem = (key) => {
+    setCheckedItems(prev => ({...prev, [key]: !prev[key]}));
+  };
+
+  const addPantryItem = () => {
+    const item = pantryInput.trim();
+    if (item && !pantryItems.includes(item)) {
+      setPantryItems(prev => [...prev, item]);
+      setPantryInput("");
+    }
+  };
+
+  const addRecipe = (newRecipe) => {
+    setRecipes(prev => [...prev, {...newRecipe, id: Date.now(), source: "My Recipe"}]);
+    showToast("Recipe saved!");
+    setActiveTab("browse");
+  };
+
+  return (
+    React.createElement("div", {className: "app-container"},
+      // Header
+      React.createElement("div", {className: "header"},
+        React.createElement("h1", null, "My Recipe Box"),
+        React.createElement("div", {className: "header-sub"}, recipes.length + " recipes"),
+        activeTab === "browse" && React.createElement("div", {className: "search-bar"},
+          React.createElement("span", {className: "search-icon"}, "\u{1F50D}"),
+          React.createElement("input", {
+            type: "text",
+            placeholder: "Search recipes or ingredients...",
+            value: search,
+            onChange: e => setSearch(e.target.value)
+          })
+        )
+      ),
+
+      // Tabs
+      React.createElement("div", {className: "tab-bar"},
+        [{id: "browse", icon: "\u{1F4D6}", label: "Recipes"},
+         {id: "pantry", icon: "\u{1F9CA}", label: "What's On Hand"},
+         {id: "shopping", icon: "\u{1F6D2}", label: "Shopping"},
+         {id: "add", icon: "\u2795", label: "Add New"}
+        ].map(tab =>
+          React.createElement("button", {
+            key: tab.id,
+            className: "tab" + (activeTab === tab.id ? " active" : ""),
+            onClick: () => setActiveTab(tab.id)
+          },
+            React.createElement("span", {className: "tab-icon"}, tab.icon),
+            tab.label
+          )
+        )
+      ),
+
+      // Browse tab
+      activeTab === "browse" && React.createElement(React.Fragment, null,
+        React.createElement("div", {className: "filter-row"},
+          CATEGORIES.map(cat =>
+            React.createElement("button", {
+              key: cat,
+              className: "chip" + (category === cat ? " active" : ""),
+              onClick: () => setCategory(cat)
+            }, cat)
+          )
+        ),
+        React.createElement("div", {className: "recipe-count"}, filtered.length + " recipe" + (filtered.length !== 1 ? "s" : "")),
+        React.createElement("div", {className: "recipe-list"},
+          filtered.map(r =>
+            React.createElement("div", {
+              key: r.id,
+              className: "recipe-card",
+              onClick: () => { setSelectedRecipe(r); setServingMultiplier(1); setCheckedIngredients({}); }
+            },
+              React.createElement("div", {className: "recipe-card-header"},
+                React.createElement("h3", null, r.name),
+                r.calories > 0 && React.createElement("span", {className: "calories"}, r.calories + " cal")
+              ),
+              React.createElement("div", {className: "recipe-meta"},
+                React.createElement("span", {className: "meta-tag"}, "\u23F1 " + r.time),
+                React.createElement("span", {className: "meta-tag"}, "\u{1F4AA} " + r.difficulty),
+                React.createElement("span", {className: "meta-tag"}, "\u{1F37D} " + r.servings)
+              ),
+              React.createElement("div", {className: "recipe-tags"},
+                React.createElement("span", {className: "recipe-tag"}, r.category),
+                React.createElement("span", {className: "recipe-tag source-tag"}, r.source)
+              )
+            )
+          ),
+          filtered.length === 0 && React.createElement("div", {className: "empty-state"},
+            React.createElement("div", {className: "empty-icon"}, "\u{1F50D}"),
+            React.createElement("p", null, "No recipes found. Try a different search or category.")
+          )
+        )
+      ),
+
+      // Pantry / What's on Hand tab
+      activeTab === "pantry" && React.createElement("div", {className: "pantry-section"},
+        React.createElement("h3", {style: {fontSize: "18px", marginBottom: "8px"}}, "What ingredients do you have?"),
+        React.createElement("p", {style: {fontSize: "14px", color: "var(--warm-gray)", marginBottom: "16px"}}, "Add ingredients you have on hand and I'll find recipes you can make."),
+        React.createElement("div", {className: "pantry-input-row"},
+          React.createElement("input", {
+            className: "pantry-input",
+            placeholder: "e.g. chicken, garlic, miso...",
+            value: pantryInput,
+            onChange: e => setPantryInput(e.target.value),
+            onKeyDown: e => e.key === "Enter" && addPantryItem()
+          }),
+          React.createElement("button", {className: "pantry-add-btn", onClick: addPantryItem}, "Add")
+        ),
+        pantryItems.length > 0 && React.createElement("div", {className: "pantry-tags"},
+          pantryItems.map((item, i) =>
+            React.createElement("span", {key: i, className: "pantry-tag"},
+              item,
+              React.createElement("button", {onClick: () => setPantryItems(prev => prev.filter((_, j) => j !== i))}, "\u00D7")
+            )
+          )
+        ),
+        pantryMatches.length > 0 && React.createElement(React.Fragment, null,
+          React.createElement("h3", {style: {fontSize: "16px", margin: "16px 0 8px"}}, "Matching Recipes"),
+          React.createElement("div", {className: "recipe-list", style: {padding: 0}},
+            pantryMatches.map(r =>
+              React.createElement("div", {
+                key: r.id,
+                className: "recipe-card",
+                onClick: () => { setSelectedRecipe(r); setServingMultiplier(1); setCheckedIngredients({}); }
+              },
+                React.createElement("div", {className: "recipe-card-header"},
+                  React.createElement("h3", null, r.name),
+                  React.createElement("span", {className: "match-score"}, r.matchCount + "/" + pantryItems.length + " match")
+                ),
+                React.createElement("div", {className: "recipe-meta"},
+                  React.createElement("span", {className: "meta-tag"}, "\u23F1 " + r.time),
+                  React.createElement("span", {className: "meta-tag"}, r.calories + " cal")
+                ),
+                React.createElement("div", {className: "recipe-tags"},
+                  r.matchedItems.map((m, i) =>
+                    React.createElement("span", {key: i, className: "recipe-tag"}, "\u2705 " + m)
+                  )
+                )
+              )
+            )
+          )
+        ),
+        pantryItems.length > 0 && pantryMatches.length === 0 && React.createElement("div", {className: "empty-state"},
+          React.createElement("div", {className: "empty-icon"}, "\u{1F937}"),
+          React.createElement("p", null, "No matching recipes found. Try adding more ingredients or different ones.")
+        )
+      ),
+
+      // Shopping list tab
+      activeTab === "shopping" && React.createElement("div", {className: "shopping-section"},
+        React.createElement("h3", {style: {fontSize: "18px", marginBottom: "4px"}}, "Shopping List"),
+        shoppingList.length === 0 ?
+          React.createElement("div", {className: "empty-state"},
+            React.createElement("div", {className: "empty-icon"}, "\u{1F6D2}"),
+            React.createElement("p", null, "Your shopping list is empty. Browse recipes and tap \"Add to Shopping List\" to get started.")
+          )
+        :
+          React.createElement(React.Fragment, null,
+            React.createElement("p", {style: {fontSize: "13px", color: "var(--warm-gray)", marginBottom: "16px"}}, shoppingList.length + " recipe" + (shoppingList.length !== 1 ? "s" : "") + " selected"),
+            shoppingList.map(recipe =>
+              React.createElement("div", {key: recipe.id, className: "shopping-recipe-group"},
+                React.createElement("div", {style: {display: "flex", justifyContent: "space-between", alignItems: "center"}},
+                  React.createElement("span", {className: "shopping-recipe-name"}, recipe.name),
+                  React.createElement("button", {className: "remove-recipe-btn", onClick: () => removeFromShoppingList(recipe.id)}, "\u2715")
+                ),
+                recipe.ingredients.map((ing, i) => {
+                  const key = recipe.id + "-" + i;
+                  return React.createElement("div", {
+                    key: key,
+                    className: "shopping-item" + (checkedItems[key] ? " crossed" : ""),
+                    onClick: () => toggleShoppingItem(key)
+                  },
+                    React.createElement("div", {className: "ingredient-check" + (checkedItems[key] ? " checked" : "")},
+                      checkedItems[key] && "\u2713"
+                    ),
+                    ing
+                  );
+                })
+              )
+            ),
+            React.createElement("button", {
+              className: "clear-list-btn",
+              onClick: () => { setShoppingList([]); setCheckedItems({}); }
+            }, "Clear Entire List")
+          )
+      ),
+
+      // Add recipe tab
+      activeTab === "add" && React.createElement(AddRecipeForm, {onSave: addRecipe}),
+
+      // Recipe detail overlay
+      selectedRecipe && React.createElement(RecipeDetail, {
+        recipe: selectedRecipe,
+        onClose: () => setSelectedRecipe(null),
+        onAddToList: addToShoppingList,
+        isInList: shoppingList.some(r => r.id === selectedRecipe.id),
+        checkedIngredients, setCheckedIngredients,
+        servingMultiplier, setServingMultiplier
+      }),
+
+      // Toast
+      toast && React.createElement("div", {className: "toast"}, toast)
+    )
+  );
+}
+
+function RecipeDetail({recipe, onClose, onAddToList, isInList, checkedIngredients, setCheckedIngredients, servingMultiplier, setServingMultiplier}) {
+  const toggleIngredient = (i) => {
+    setCheckedIngredients(prev => ({...prev, [i]: !prev[i]}));
+  };
+
+  return React.createElement("div", {className: "detail-overlay"},
+    React.createElement("div", {className: "detail-header"},
+      React.createElement("button", {className: "back-btn", onClick: onClose}, "\u2190"),
+      React.createElement("h2", null, recipe.name)
+    ),
+    React.createElement("div", {className: "detail-body"},
+      // Meta row
+      React.createElement("div", {className: "detail-meta-row"},
+        React.createElement("div", {className: "detail-meta-item"},
+          React.createElement("span", {className: "value"}, recipe.time),
+          React.createElement("span", {className: "label"}, "Time")
+        ),
+        React.createElement("div", {className: "detail-meta-item"},
+          React.createElement("span", {className: "value"}, recipe.difficulty),
+          React.createElement("span", {className: "label"}, "Difficulty")
+        ),
+        recipe.calories > 0 && React.createElement("div", {className: "detail-meta-item"},
+          React.createElement("span", {className: "value"}, recipe.calories),
+          React.createElement("span", {className: "label"}, "Calories")
+        )
+      ),
+
+      // Nutrition
+      recipe.nutrition && recipe.calories > 0 && React.createElement("div", {className: "detail-section"},
+        React.createElement("h3", null, "Nutrition Per Serving"),
+        React.createElement("div", {className: "nutrition-grid"},
+          React.createElement("div", {className: "nutrition-item"},
+            React.createElement("div", {className: "n-val"}, recipe.nutrition.protein),
+            React.createElement("div", {className: "n-label"}, "Protein")
+          ),
+          React.createElement("div", {className: "nutrition-item"},
+            React.createElement("div", {className: "n-val"}, recipe.nutrition.carbs),
+            React.createElement("div", {className: "n-label"}, "Carbs")
+          ),
+          React.createElement("div", {className: "nutrition-item"},
+            React.createElement("div", {className: "n-val"}, recipe.nutrition.fat),
+            React.createElement("div", {className: "n-label"}, "Fat")
+          ),
+          React.createElement("div", {className: "nutrition-item"},
+            React.createElement("div", {className: "n-val"}, recipe.nutrition.fiber),
+            React.createElement("div", {className: "n-label"}, "Fiber")
+          ),
+          React.createElement("div", {className: "nutrition-item"},
+            React.createElement("div", {className: "n-val"}, recipe.nutrition.sodium),
+            React.createElement("div", {className: "n-label"}, "Sodium")
+          )
+        )
+      ),
+
+      // Servings
+      React.createElement("div", {className: "detail-section"},
+        React.createElement("h3", null, "Serves: " + recipe.servings)
+      ),
+
+      // Ingredients
+      React.createElement("div", {className: "detail-section"},
+        React.createElement("h3", null, "Ingredients"),
+        recipe.ingredients.map((ing, i) =>
+          React.createElement("div", {
+            key: i,
+            className: "ingredient-item",
+            onClick: () => toggleIngredient(i)
+          },
+            React.createElement("div", {className: "ingredient-check" + (checkedIngredients[i] ? " checked" : "")},
+              checkedIngredients[i] && "\u2713"
+            ),
+            React.createElement("span", {style: checkedIngredients[i] ? {textDecoration: "line-through", color: "var(--warm-gray-light)"} : {}}, ing)
+          )
+        )
+      ),
+
+      // Instructions
+      React.createElement("div", {className: "detail-section"},
+        React.createElement("h3", null, "Instructions"),
+        recipe.instructions.map((step, i) =>
+          React.createElement("div", {key: i, className: "instruction-item"},
+            React.createElement("span", {className: "step-num"}, (i + 1) + "."),
+            React.createElement("span", null, step)
+          )
+        )
+      ),
+
+      // Cook's notes
+      recipe.notes && React.createElement("div", {className: "cook-note"}, "\u{1F468}\u200D\u{1F373} Cook's Note: " + recipe.notes),
+
+      // Add to shopping list
+      React.createElement("button", {
+        className: "add-to-list-btn" + (isInList ? " added-btn" : ""),
+        onClick: () => onAddToList(recipe),
+        style: {marginTop: "16px"}
+      }, isInList ? "\u2705 On Shopping List" : "\u{1F6D2} Add to Shopping List"),
+
+      // Source
+      React.createElement("div", {style: {textAlign: "center", marginTop: "16px", fontSize: "12px", color: "var(--warm-gray-light)"}}, "Source: " + recipe.source)
+    )
+  );
+}
+
+function AddRecipeForm({onSave}) {
+  const [name, setName] = useState("");
+  const [time, setTime] = useState("");
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [servings, setServings] = useState("");
+  const [calories, setCalories] = useState("");
+  const [cat, setCat] = useState("Poultry");
+  const [ingredients, setIngredients] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const handleSave = () => {
+    if (!name.trim() || !ingredients.trim()) return;
+    onSave({
+      name: name.trim(),
+      time: time || "N/A",
+      difficulty,
+      servings: servings || "N/A",
+      calories: parseInt(calories) || 0,
+      category: cat,
+      nutrition: {carbs: "-", protein: "-", fat: "-", fiber: "-", sodium: "-"},
+      ingredients: ingredients.split("\n").map(s => s.trim()).filter(Boolean),
+      instructions: instructions.split("\n").map(s => s.trim()).filter(Boolean),
+      notes: notes.trim()
+    });
+    setName(""); setTime(""); setServings(""); setCalories("");
+    setIngredients(""); setInstructions(""); setNotes("");
+  };
+
+  return React.createElement("div", {className: "form-section"},
+    React.createElement("h3", {style: {fontSize: "18px", marginBottom: "16px"}}, "Add a New Recipe"),
+    React.createElement("div", {className: "form-group"},
+      React.createElement("label", null, "Recipe Name *"),
+      React.createElement("input", {value: name, onChange: e => setName(e.target.value), placeholder: "e.g. Grandma's Chicken Soup"})
+    ),
+    React.createElement("div", {className: "form-row"},
+      React.createElement("div", {className: "form-group"},
+        React.createElement("label", null, "Time"),
+        React.createElement("input", {value: time, onChange: e => setTime(e.target.value), placeholder: "30 min"})
+      ),
+      React.createElement("div", {className: "form-group"},
+        React.createElement("label", null, "Servings"),
+        React.createElement("input", {value: servings, onChange: e => setServings(e.target.value), placeholder: "4"})
+      )
+    ),
+    React.createElement("div", {className: "form-row"},
+      React.createElement("div", {className: "form-group"},
+        React.createElement("label", null, "Difficulty"),
+        React.createElement("select", {value: difficulty, onChange: e => setDifficulty(e.target.value)},
+          ["Easy", "Moderate", "Advanced"].map(d => React.createElement("option", {key: d, value: d}, d))
+        )
+      ),
+      React.createElement("div", {className: "form-group"},
+        React.createElement("label", null, "Calories"),
+        React.createElement("input", {type: "number", value: calories, onChange: e => setCalories(e.target.value), placeholder: "200"})
+      )
+    ),
+    React.createElement("div", {className: "form-group"},
+      React.createElement("label", null, "Category"),
+      React.createElement("select", {value: cat, onChange: e => setCat(e.target.value)},
+        CATEGORIES.filter(c => c !== "All").map(c => React.createElement("option", {key: c, value: c}, c))
+      )
+    ),
+    React.createElement("div", {className: "form-group"},
+      React.createElement("label", null, "Ingredients * (one per line)"),
+      React.createElement("textarea", {value: ingredients, onChange: e => setIngredients(e.target.value), placeholder: "1 cup flour\n2 eggs\n1/2 cup sugar"})
+    ),
+    React.createElement("div", {className: "form-group"},
+      React.createElement("label", null, "Instructions (one step per line)"),
+      React.createElement("textarea", {value: instructions, onChange: e => setInstructions(e.target.value), placeholder: "Preheat oven to 350\u00B0F.\nMix dry ingredients together.\nAdd wet ingredients and stir."})
+    ),
+    React.createElement("div", {className: "form-group"},
+      React.createElement("label", null, "Cook's Notes"),
+      React.createElement("textarea", {value: notes, onChange: e => setNotes(e.target.value), placeholder: "Any tips, substitutions, or variations...", style: {minHeight: "60px"}})
+    ),
+    React.createElement("button", {className: "save-recipe-btn", onClick: handleSave}, "Save Recipe")
+  );
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
+</script>
+</body>
+</html>
