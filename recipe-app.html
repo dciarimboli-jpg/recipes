@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Recipe Box">
+<title>Recipe Box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  :root {
+    --primary: #85346C;
+    --primary-dark: #6b2a57;
+    --primary-light: #f0e4ed;
+    --bg: #E9D9E8;
+    --surface: #f8f4f8;
+    --text-primary: #352B4C;
+    --text-secondary: #4e4368;
+    --text-tertiary: #7d7394;
+    --border: #d4c6d3;
+    --border-light: #ddd2dc;
+    --accent: #c17f3e;
+    --accent-light: #fdf5ec;
+    --danger: #b85450;
+    --danger-light: #fdf0f0;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 16px;
+    --serif: 'DM Serif Display', Georgia, serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100dvh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app-container { max-width: 480px; margin: 0 auto; padding-bottom: 88px; background: var(--bg); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-lg); margin-top: 12px; margin-bottom: 12px; }
+
+  /* ─── Header ─── */
+  .header {
+    background: var(--primary);
+    padding: 20px 24px 0;
+    border-bottom: none;
+  }
+  .header-top { display: flex; align-items: baseline; justify-content: space-between; }
+  .header h1 {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: #E9D9E8;
+    letter-spacing: -0.3px;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: #E9D9E8;
+    font-weight: 700;
+  }
+
+  /* ─── Search ─── */
+  .search-bar { padding: 16px 0 0; }
+  .search-bar input {
+    width: 100%;
+    padding: 12px 16px 12px 42px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-family: var(--sans);
+    background: #f8f4f8;
+    color: #352B4C;
+    outline: none;
+    transition: background 0.2s;
+  }
+  .search-bar input:focus {
+    background: #faf7fa;
+  }
+  .search-bar input::placeholder { color: rgba(53,43,76,0.5); }
+  .search-wrap { position: relative; }
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(53,43,76,0.5);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  /* ─── Tabs ─── */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .tab {
+    flex: 1;
+    padding: 14px 4px 12px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: var(--text-tertiary);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+  .tab-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+
+  /* ─── Filter chips ─── */
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px 24px 8px;
+  }
+  .chip {
+    padding: 7px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--sans);
+  }
+  .chip:hover { border-color: var(--primary); color: var(--primary); }
+  .chip.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+  }
+
+  /* ─── Recipe cards ─── */
+  .recipe-list { padding: 8px 20px; }
+  .recipe-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border: 1px solid var(--border-light);
+    position: relative;
+    overflow: hidden;
+  }
+  .recipe-card:active { transform: scale(0.985); box-shadow: var(--shadow-md); }
+  .recipe-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .recipe-card h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--text-primary);
+    line-height: 1.25;
+    flex: 1;
+  }
+  .recipe-card .calories {
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--accent-light);
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+  .recipe-meta { display: flex; gap: 16px; margin-top: 10px; }
+  .meta-tag {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+  .recipe-tags { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .recipe-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+    letter-spacing: 0.1px;
+  }
+  .source-tag {
+    background: var(--bg);
+    color: var(--text-tertiary);
+    border: 1px solid var(--border);
+  }
+
+  /* ─── Recipe detail ─── */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 200;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .detail-header {
+    background: var(--surface);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--border);
+  }
+  .back-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 18px;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .back-btn:active { background: var(--bg); }
+  .detail-header h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.25;
+    color: var(--text-primary);
+  }
+  .detail-body { padding: 24px; }
+
+  /* Detail hero section */
+  .detail-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    color: white;
+  }
+  .detail-hero-title {
+    font-family: var(--serif);
+    font-size: 24px;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .detail-meta-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .detail-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.12);
+    border-radius: var(--radius);
+    min-width: 72px;
+    backdrop-filter: blur(10px);
+  }
+  .detail-meta-item .value { font-size: 15px; font-weight: 700; }
+  .detail-meta-item .label { font-size: 11px; opacity: 0.75; margin-top: 3px; font-weight: 500; }
+
+  .detail-section { margin-bottom: 28px; }
+  .detail-section h3 {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-tertiary);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ingredient-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .ingredient-item:last-child { border-bottom: none; }
+  .ingredient-check {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-size: 13px;
+  }
+  .ingredient-check.checked { background: var(--primary); border-color: var(--primary); color: white; }
+
+  .instruction-item {
+    padding: 14px 0;
+    font-size: 15px;
+    line-height: 1.6;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    gap: 14px;
+  }
+  .instruction-item:last-child { border-bottom: none; }
+  .step-num {
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-light);
+    border-radius: 50%;
+    font-size: 13px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .cook-note {
+    color: var(--text-secondary);
+    font-size: 14px;
+    padding: 16px;
+    background: var(--accent-light);
+    border-radius: var(--radius);
+    line-height: 1.6;
+    border-left: 3px solid var(--accent);
+    margin-top: 4px;
+  }
+
+  .add-to-list-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.2px;
+  }
+  .add-to-list-btn:active { transform: scale(0.98); background: var(--primary-dark); }
+  .added-btn { background: var(--text-tertiary); }
+
+  /* ─── Nutrition ─── */
+  .nutrition-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .nutrition-item {
+    text-align: center;
+    padding: 12px 8px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-light);
+  }
+  .nutrition-item .n-val { font-size: 16px; font-weight: 700; color: var(--primary); }
+  .nutrition-item .n-label { font-size: 10px; color: var(--text-tertiary); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+
+  /* ─── Shopping list ─── */
+  .shopping-section { padding: 20px 24px; }
+  .section-title {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .section-desc { font-size: 14px; color: var(--text-tertiary); margin-bottom: 20px; line-height: 1.5; }
+  .shopping-recipe-group {
+    margin-bottom: 20px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+  }
+  .shopping-recipe-name {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .shopping-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 15px;
+    transition: opacity 0.2s;
+  }
+  .shopping-item:last-child { border-bottom: none; }
+  .shopping-item.crossed { opacity: 0.4; }
+  .shopping-item.crossed span { text-decoration: line-through; }
+  .clear-list-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--danger-light);
+    color: var(--danger);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all 0.15s;
+  }
+  .clear-list-btn:active { transform: scale(0.98); }
+  .remove-recipe-btn {
+    font-size: 16px;
+    color: var(--text-tertiary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s;
+  }
+  .remove-recipe-btn:hover { color: var(--danger); background: var(--danger-light); }
+
+  /* ─── Pantry ─── */
+  .pantry-section { padding: 20px 24px; }
+  .pantry-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .pantry-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-family: var(--sans);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .pantry-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(44,95,74,0.1); }
+  .pantry-add-btn {
+    padding: 12px 20px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pantry-add-btn:active { background: var(--primary-dark); }
+  .pantry-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .pantry-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--primary-light);
+    border-radius: 100px;
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .pantry-tag button {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.6;
+  }
+  .pantry-tag button:hover { opacity: 1; }
+  .match-badge {
+    font-size: 11px;
+    color: white;
+    background: var(--primary);
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+
+  /* ─── Add recipe form ─── */
+  .form-section { padding: 20px 24px; }
+  .form-group { margin-bottom: 18px; }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-family: var(--sans);
+    background: var(--surface);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(44,95,74,0.1);
+  }
+  .form-group textarea { min-height: 110px; resize: vertical; line-height: 1.5; }
+  .form-row { display: flex; gap: 12px; }
+  .form-row .form-group { flex: 1; }
+  .save-recipe-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 600;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .save-recipe-btn:active { transform: scale(0.98); background: var(--primary-dark); }
+
+  /* ─── Empty states ─── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-tertiary);
+  }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state p { font-size: 15px; line-height: 1.6; max-width: 280px; margin: 0 auto; }
+
+  /* ─── Toast ─── */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary);
+    color: white;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 300;
+    animation: toastIn 0.3s ease;
+    white-space: nowrap;
+    box-shadow: var(--shadow-lg);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  .recipe-count {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    padding: 4px 24px 8px;
+    font-weight: 500;
+  }
+
+  /* ─── Dividers & misc ─── */
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 24px;
+  }
+  .source-line {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useEffect, useMemo } = React;
+
+// ─── RECIPE DATABASE ───
+const INITIAL_RECIPES = [
+  {
+    id: 1, name: "Salmon with Miso-Honey Glaze", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 277,
+    category: "Seafood",
+    nutrition: {carbs: "16g", protein: "31g", fat: "8g", fiber: "0g", sodium: "387mg"},
+    ingredients: ["1/4 cup yellow miso","2 tablespoons mirin","2 tablespoons honey","1 tablespoon lime juice","1 1/4 pounds salmon filet, cut into 4 equal portions"],
+    instructions: ["Preheat grill or broiler.","In a small bowl, combine miso, mirin, honey, and lime juice. Mix to a smooth paste.","Spread 1 tablespoon paste on top of salmon fillet. Grill or broil to desired doneness."],
+    notes: "Feel free to add chopped garlic/ginger to the glaze. You can substitute the juice and zest of an orange for the mirin. The glaze is wonderful on pieces of tofu or roasted eggplant, as well."
+  },
+  {
+    id: 2, name: "Miso Soup", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4 (3/4 cup)", calories: 45,
+    category: "Soup",
+    nutrition: {carbs: "6g", protein: "trace", fat: "1g", fiber: "trace", sodium: "322mg"},
+    ingredients: ["1/3 cup chopped shallot or onion","1/2 teaspoon oil","1 quart vegetable stock or water","3 tablespoons miso paste","3 tablespoons sliced scallion","1/4 cup diced firm tofu","Pinch pepper","1/2 teaspoon sesame oil"],
+    instructions: ["In a medium saucepan, cook shallots until translucent in the oil.","Deglaze with vegetable stock or water and bring to a boil. Simmer 5 minutes, add tofu to heat through.","Place miso in a bowl and ladle on about 1/2 cup of broth. Stir to combine then add back into the pot.","Garnish with scallions & drizzle of sesame oil and serve."],
+    notes: "Use different types of miso to vary the flavor. For maximum nutrition, miso shouldn't be brought to the boil."
+  },
+  {
+    id: 3, name: "Grilled Chicken with Mustard & Basil", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "4", calories: 180,
+    category: "Poultry",
+    nutrition: {carbs: "1g", protein: "17g", fat: "5g", fiber: "0g", sodium: "475mg"},
+    ingredients: ["2 tablespoons Dijon mustard","1 teaspoon minced garlic","2 tablespoons balsamic vinegar","1/2 teaspoon salt","1/4 teaspoon black pepper","4 tablespoons chopped basil","4 skinless chicken breast halves, boned and defatted","1 teaspoon oil (optional)"],
+    instructions: ["In a small bowl, combine mustard, garlic, vinegar, salt, pepper, and basil. Mix well.","Coat chicken breasts with mixture (can marinate for 1 to 3 hours, if desired).","Preheat broiler.","Drizzle roasting pan with oil if desired. Broil chicken breast until cooked through, about 5 minutes on each side. Place chicken on lower rack of the broiler if getting too browned."],
+    notes: "Dijon mustard provides flavor as well as tenderizing the chicken breasts. Feel free to pound out the chicken breasts a little to speed up cooking time."
+  },
+  {
+    id: 4, name: "Chocolate Yogurt Mousse", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "8 (1/4 cup)", calories: 120,
+    category: "Dessert",
+    nutrition: {carbs: "19g", protein: "4g", fat: "7g", fiber: "1g", sodium: "15mg"},
+    ingredients: ["6 ounces (170g) dark chocolate chips","1/2 cup (120g) milk","1 cup (240g) Greek yogurt","2 teaspoons vanilla extract"],
+    instructions: ["Place chocolate in a medium bowl. Place milk in a medium saucepan. Set chocolate over the pan of milk and melt over medium heat.","Pour hot milk over the chocolate and stir to melt. Add vanilla.","Whisk in yogurt until all is combined. Serve 1/4 cup."],
+    notes: "Use this dreamy dessert with some chocolate cake as a base, or a dip for fresh fruits."
+  },
+  {
+    id: 5, name: "Bean & Feta Salad with Roasted Vegetables", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4 salads", calories: 280,
+    category: "Salad",
+    nutrition: {carbs: "43g", protein: "12g", fat: "8g", fiber: "6g", sodium: "336mg"},
+    ingredients: ["2 large tomatoes, sliced in 8 slices","1 medium red bell pepper, cut into quarters","1 medium red onion, sliced","1 medium tomato, peeled and chopped (about 4 ounces) - for vinaigrette","1 teaspoon balsamic vinegar","1 tablespoon olive oil","1/4 teaspoon salt","1 head green leaf lettuce, cleaned and torn into medium pieces","1 cup cooked beans","1/2 cup feta cheese, crumbled"],
+    instructions: ["Preheat oven to 400°F. Lightly coat a sheet pan with olive oil.","Distribute tomatoes, red peppers, and red onions evenly and roast for 15 to 20 minutes or until edges begin to turn brown. Cool and remove skins from tomatoes and peppers. Slice peppers.","To prepare dressing, combine peeled tomato, balsamic vinegar, olive oil and salt in a blender container and puree until smooth.","Arrange 1/4 of lettuce on a large salad plate and sprinkle with 1/4 cup kidney beans. Top with 2 slices roasted tomato, 2 slices roasted onion and 2 slices roasted peppers. Drizzle 2 tablespoons dressing over salad and garnish with 2 tablespoons feta cheese."],
+    notes: ""
+  },
+  {
+    id: 6, name: "Chicken Piccata", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "4", calories: 165,
+    category: "Poultry",
+    nutrition: {carbs: "4g", protein: "27g", fat: "4g", fiber: "trace", sodium: "287mg"},
+    ingredients: ["1 tablespoon fresh lemon juice","1 tablespoon capers, packed in vinegar and salt, drained","1/2 cup chicken stock","1/4 cup all-purpose flour","4 skinless chicken breast halves, boned and defatted","2 teaspoons oil"],
+    instructions: ["In a small bowl, combine lemon juice, capers and chicken stock. Set aside.","Place flour in a large bowl. Dredge chicken breast in the flour.","Heat a large sauté pan with oil. Sauté chicken over medium heat until chicken is cooked through and golden brown, about 3 to 5 minutes on each side, or until juices run clear when pierced with a fork.","Add lemon juice mixture to pan and cook until sauce begins to thicken, about 2 minutes.","Serve immediately."],
+    notes: "This recipe can easily accommodate the addition of vegetables to the pan: wilt some spinach at the very last moment in the lemony sauce."
+  },
+  {
+    id: 7, name: "Cauliflower Fried \"Rice\"", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "6 (1/2 cup)", calories: 95,
+    category: "Vegetable",
+    nutrition: {carbs: "19g", protein: "4g", fat: "trace", fiber: "2g", sodium: "197mg"},
+    ingredients: ["2 1/2 cups riced cauliflower","1/2 cup diced shallots or onion","1/4 cup diced scallions","1/4 cup diced carrots","1/4 cup frozen peas, defrosted","3 eggs","1/2 teaspoon turmeric","2 tablespoons chopped fresh basil","1 1/2 tablespoons low-sodium tamari"],
+    instructions: ["Pulse cauliflower in a food processor, or grate it with a box grater into tiny pieces.","Spray a large sauté pan or wok with nonstick vegetable spray. Stir-fry shallots, scallions, carrots, and red onion over medium heat until just tender. Add peas and mix well.","Move vegetables to the side of the pan and pour in eggs. Scramble eggs with turmeric and combine with vegetables.","Add cauliflower rice & basil. Sprinkle tamari over rice and mix gently."],
+    notes: "Add whatever vegetables or proteins you like to bulk up this recipe to a full meal."
+  },
+  {
+    id: 8, name: "Sesame \"Ranch\" Dressing", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "6 (2 Tbsp)", calories: 60,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "1.4g", protein: "trace", fat: "5.6g", fiber: "trace", sodium: "84mg"},
+    ingredients: ["2 tablespoons yellow miso","3 tablespoons rice wine vinegar","1 1/2 tablespoons tahini","1/4 cup olive oil","1 teaspoon tamari","1 teaspoon sesame oil","1 teaspoon onion powder","Fresh ground pepper"],
+    instructions: ["Combine all ingredients in food processor or blender and puree until smooth."],
+    notes: "Nutrient-dense and delicious, savory & tangy dressing is great for crunchy lettuces, kale, or crudites."
+  },
+  {
+    id: 9, name: "Maple Pecan-Crusted Chicken", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "4", calories: 250,
+    category: "Poultry",
+    nutrition: {carbs: "10g", protein: "27g", fat: "8g", fiber: "1g", sodium: "101mg"},
+    ingredients: ["2 tablespoons maple syrup","2 tablespoons champagne vinegar","2 tablespoons diced shallots","1/2 cup chicken stock","2 teaspoons water","1/3 cup pecans","1/3 cup flour","1 tablespoon chopped herbs","1/2 teaspoon salt","1/4 teaspoon black pepper","2 teaspoons oil","1/3 cup whole pecans (for candied)","1 egg white","1/4 teaspoon maple syrup","Pinch each: salt, cumin, cinnamon, chili powder","4 skinless chicken breast halves, boned and defatted"],
+    instructions: ["Combine syrup, vinegar and shallots in a small saucepan and bring to a boil. Reduce heat to a simmer and cook until liquid has reduced by 1/2. Add stock and bring back to a boil. Reduce to desired consistency.","Preheat oven to 350°. Combine all ingredients for candied pecans. Spread on a parchment-lined baking sheet. Bake 5-10 minutes until browned. Cool and chop.","Increase oven to 450°F. Coat chicken with crust, about 1 tablespoon per breast. Roast about 20 minutes until 165°F. Serve with maple demi-glace and candied pecans."],
+    notes: ""
+  },
+  {
+    id: 10, name: "Asian Steak Stir Fry", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Moderate", servings: "6 (4 oz)", calories: 546,
+    category: "Beef",
+    nutrition: {carbs: "45g", protein: "38g", fat: "17g", fiber: "7g", sodium: "552mg"},
+    ingredients: ["24 ounces flank steak","1 cup snow peas","1/2 cup carrots, half moons","1/2 cup peppers, yellow or red","6 oz tofu, hard organic","3/4 cup red onions, julienne","2 tbsp low-sodium tamari","1 tablespoon mirin or cooking wine","1 tablespoon oil","60g hoisin sauce","1/4 cup scallions, thinly sliced","2 tsp sesame seeds","3 cups cooked brown rice"],
+    instructions: ["Pan roast steak to desired temperature. Let beef rest.","In a hot saute pan add oil and all veggies and saute just enough till veggies start to wilt. Add tofu and finish with soy and a drizzle of sesame oil.","Place 1/2 cup of cooked rice in each of 6 bowls. Slice beef. Divide the beef and vegetable mixture on top. Drizzle hoisin sauce. Garnish with scallions & sesame seeds."],
+    notes: "Hoisin Sauce: 90g brown sugar, 45g water, 45g black beans, tamari, ketchup, sherry vinegar, Worcestershire. Bring to a simmer. Keeps 2 weeks."
+  },
+  {
+    id: 11, name: "Jammy Sweet Peppers", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "12", calories: 22,
+    category: "Vegetable",
+    nutrition: {carbs: "3g", protein: "1g", fat: "1g", fiber: "1g", sodium: "4mg"},
+    ingredients: ["1 onion, thinly sliced","2 red peppers, thinly sliced","2 garlic cloves, minced","2 tablespoons tomato paste","2 teaspoons brown sugar or honey","1 teaspoon oregano","1/2 teaspoon red chili flakes","2 tablespoons cold water","1 tablespoon vinegar","2 teaspoons olive oil"],
+    instructions: ["Heat sauce pan with olive oil. Add vegetables & sweat over medium heat until soft. Add the rest of the ingredients, lower heat, cover and simmer until jammy texture, about 30 minutes.","Check for seasoning."],
+    notes: "Substitute apple, pear, pineapple or peaches, if you prefer."
+  },
+  {
+    id: 12, name: "Chicken Parmesan with Roasted Vegetables", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Moderate", servings: "4", calories: 353,
+    category: "Poultry",
+    nutrition: {carbs: "24g", protein: "36g", fat: "13g", fiber: "3g", sodium: "584mg"},
+    ingredients: ["1 teaspoon olive oil","1 tablespoon minced garlic","1/4 cup onions, julienne","2 cups zucchini, cubed","2 cups cherry tomatoes, halved","1/2 teaspoon salt","1 pinch black pepper","4 tablespoons balsamic vinegar","1 tablespoon fresh basil, chiffonade","1-pound chicken breasts, boneless-skinless","1 cup ground multigrain cereal","1 tablespoon dried basil","1 teaspoon dried oregano","1/4 teaspoon black pepper","1 teaspoon granulated garlic","1/4 cup all-purpose flour","1 whole egg, beaten","4-ounces mozzarella cheese, sliced"],
+    instructions: ["Preheat oven to 450°F convection roast.","Combine oil, garlic, onion, zucchini, tomato, salt, pepper, and vinegar. Toss, transfer to parchment-lined sheet pan and roast about 10 minutes. Cool slightly, top with fresh basil.","Combine ground cereal with herbs, pepper and garlic. Set up breading station with flour and egg.","Pound chicken breasts to 1/4-inch thick. Dredge in flour, egg, then herbed breading. Spray with canola oil.","Bake at 450°F for 10-12 minutes until 165°F. Top with mozzarella and return to oven 1 minute. Serve with vegetable mixture."],
+    notes: ""
+  },
+  {
+    id: 13, name: "Roasted Butternut Squash Soup", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "8 (6 oz)", calories: 110,
+    category: "Soup",
+    nutrition: {carbs: "23g", protein: "4g", fat: "3g", fiber: "2g", sodium: "50mg"},
+    ingredients: ["1 butternut squash","1 medium onion, minced","1 small clove garlic, minced","1 carrot, diced","1 stick celery, diced","1 teaspoon olive oil","1/4 cup white wine","2 cups stock (or water)","1 can light coconut milk","1/4 teaspoon salt","1/4 teaspoon pepper","2 branches fresh thyme, or 1/2 teaspoon dry","Toasted pumpkin seeds","Extra virgin olive oil drizzle"],
+    instructions: ["Heat oven to 450°F. Peel, cut, dice and roast butternut squash until tender, about 30 minutes. Reserve.","In a medium saucepan over low heat, sauté onion, garlic, carrots, celery in olive oil. Add wine to deglaze.","Add squash, salt, pepper, thyme, and stock. Cook until soft enough to blend. Blend until smooth.","Add coconut milk and process until well mixed. Garnish with olive oil, pumpkin seeds, and cracked pepper."],
+    notes: ""
+  },
+  {
+    id: 14, name: "Matzo Balls (Knaidlach)", source: "Canyon Ranch",
+    time: "60 min", difficulty: "Moderate", servings: "22 balls", calories: 35,
+    category: "Soup",
+    nutrition: {carbs: "5g", protein: "2g", fat: "trace", fiber: "0g", sodium: "68mg"},
+    ingredients: ["5 egg whites, whisked","1 tablespoon canola oil","3 tablespoons minced dill","1 tablespoon minced chives","1 cup matzo meal","1/2 teaspoon salt","1/2 cup club soda","1/2 teaspoon cracked black pepper","4 quarts water"],
+    instructions: ["In a large bowl, combine all ingredients except water. Mix well.","Cover with plastic wrap and refrigerate for 1/2 hour.","Bring 4 quarts of water to a boil.","With damp hands shape dough into walnut-sized balls, dropping each into boiling water.","Boil for 1/2 hour. Remove with slotted spoon. Refrigerate until needed. Serve warm."],
+    notes: ""
+  },
+  {
+    id: 15, name: "Lentil & Swiss Chard Soup", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "12 (6 oz)", calories: 127,
+    category: "Soup",
+    nutrition: {carbs: "20g", protein: "7g", fat: "2g", fiber: "4g", sodium: "257mg"},
+    ingredients: ["1 teaspoon olive oil","1 cup diced yellow onions","1/2 cup diced carrot","1/2 cup diced celery","1 tablespoon minced garlic","4 cups sliced swiss chard","1 quart vegetable stock or water","3/4 cup brown lentils","1 cup diced potatoes","1/4 teaspoon black pepper","1/2 teaspoon sea salt","Pinch red pepper flakes","1 1/2 tablespoons fresh lemon juice","2 teaspoons tamari","1 tablespoon chopped parsley","3/4 cup diced tempeh bacon"],
+    instructions: ["Sauté onion, carrot, celery and garlic in oil over medium heat until translucent, about 2-3 minutes.","Add chard, sauté five more minutes. Add water or stock, lentils & potatoes, salt, pepper, red pepper flakes. Simmer until cooked through.","Finish with lemon juice & tamari. Serve with a sprinkle of parsley. Can finish with 1 tablespoon broiled tempeh bacon per serving."],
+    notes: "Tempeh Bacon: marinate 3/4 cup tempeh cubes in 2 tablespoons tamari, 1 teaspoon brown sugar, 1/2 teaspoon paprika, dash liquid smoke."
+  },
+  {
+    id: 16, name: "Peanut Butter Chocolate Yogurt Smoothie", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "1", calories: 190,
+    category: "Beverage",
+    nutrition: {carbs: "24g", protein: "15g", fat: "5g", fiber: "2g", sodium: "60mg"},
+    ingredients: ["1/2 cup non-fat plain yogurt","1/2 tablespoon peanut butter (or sub tahini or almond butter)","1/2 cup skim milk","1/2 banana","1 tablespoon cocoa powder","1/4 cup chopped ice"],
+    instructions: ["Combine all ingredients in a blender container and mix until smooth."],
+    notes: "Substitute 3/4 cup kefir in place of yogurt and milk."
+  },
+  {
+    id: 17, name: "Chocolate Almond Butter Delight", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "10 (2 Tbsp)", calories: 65,
+    category: "Dessert",
+    nutrition: {carbs: "5g", protein: "5g", fat: "4g", fiber: "trace", sodium: "12mg"},
+    ingredients: ["1 cup nonfat ricotta cheese","2 teaspoons pure vanilla extract","1/2 teaspoon ground cinnamon","1 1/2 tablespoons honey","1/4 cup almond butter (without added salt)","2 tablespoons cocoa powder"],
+    instructions: ["Combine all ingredients in food processor or blender and puree until smooth."],
+    notes: "Substitute peanut or any nut butter for the almond butter. Substitute Greek yogurt or Skyr for the ricotta."
+  },
+  {
+    id: 18, name: "Chocolate Hazelnut Dessert Hummus", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "10 (2 oz)", calories: 123,
+    category: "Dessert",
+    nutrition: {carbs: "21g", protein: "5g", fat: "3g", fiber: "2g", sodium: "88mg"},
+    ingredients: ["15 ounces canned chickpeas, drained","3 tablespoons cocoa powder","3 tablespoons maple syrup","1/3 cup chopped, toasted hazelnuts","2 tablespoons water","1 teaspoon vanilla extract","Apple slices","Pear slices","5 pita breads","2 tablespoons cinnamon sugar"],
+    instructions: ["Combine hummus ingredients in food processor and blend. Taste for seasoning.","Heat oven to 350°F. Cut pitas into wedges. Sprinkle with cinnamon sugar and bake until lightly browned and crispy."],
+    notes: "Serve with pita bread toasted with cinnamon sugar, or apple, or pear slices."
+  },
+  {
+    id: 19, name: "Beef Tenderloin with Adobo Paste", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 215,
+    category: "Beef",
+    nutrition: {carbs: "7g", protein: "25g", fat: "10g", fiber: "trace", sodium: "112mg"},
+    ingredients: ["1 tablespoon packed brown sugar","1 tablespoon fresh lime juice","1 clove garlic, minced","1 tablespoon chili powder","16 ounces beef tenderloin, cut into 4 equal portions","1 teaspoon oil (optional)"],
+    instructions: ["Preheat grill or broiler.","In a small bowl, combine brown sugar, lime juice, garlic, and chili powder. Mix to a smooth paste.","Spread 1 teaspoon paste on each side of beef tenderloin fillet. Grill or broil to desired doneness, about 3-5 minutes on each side."],
+    notes: "The adobo sauce can be stored in the refrigerator for up to 2 weeks. It also works on chicken and fish. Contains no salt — adjust to taste."
+  },
+  {
+    id: 20, name: "Apple Chia Seed Pudding", source: "Canyon Ranch",
+    time: "30 min + overnight", difficulty: "Easy", servings: "6 (3/4 cup)", calories: 105,
+    category: "Breakfast",
+    nutrition: {carbs: "14g", protein: "3g", fat: "4g", fiber: "4g", sodium: "21mg"},
+    ingredients: ["1 cup almond milk, plain","1/4 cup apple juice, organic","1 tsp vanilla extract","1/2 tsp ground cinnamon","1/3 cup chia seeds"],
+    instructions: ["Whisk together almond milk, apple juice, vanilla, and cinnamon until smooth.","Add in chia seeds and whisk together (seeds will settle to bottom — keep whisking every few minutes until they start to expand).","Place in the refrigerator overnight.","Small dice apple to garnish."],
+    notes: "Use whatever kind of milk or juice you have on hand. You can even use brewed tea or cold brew coffee. Keeps in the refrigerator for up to 4 days."
+  },
+  {
+    id: 21, name: "Stir Fry Sauce", source: "Canyon Ranch",
+    time: "5 min", difficulty: "Easy", servings: "6 (2 Tbsp)", calories: 30,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "6g", protein: "1g", fat: "trace", fiber: "trace", sodium: "364mg"},
+    ingredients: ["1/4 cup low-sodium tamari sauce","2 tablespoons rice vinegar","2 tablespoons minced garlic","2 tablespoons ginger","2 tablespoons brown sugar","1 tablespoon sesame oil","Pinch red pepper flakes"],
+    instructions: ["Combine all ingredients and mix well."],
+    notes: "All-purpose stir-fry sauce for any proteins or vegetables. Make a large batch and keep in the fridge for quick meals."
+  },
+  {
+    id: 22, name: "Soft Corn Polenta", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4 (1/3 cup)", calories: 120,
+    category: "Side Dish",
+    nutrition: {carbs: "13g", protein: "5g", fat: "5g", fiber: "1g", sodium: "108mg"},
+    ingredients: ["3 tablespoons finely minced onion","1 tablespoon unsalted butter","3 tablespoons soft corn, cut from cob or frozen kernels","1 1/4 cup 2% milk","1/4 cup polenta","1/4 teaspoon sea salt","Pinch freshly ground black pepper","2 tablespoons grated Parmesan cheese"],
+    instructions: ["Sauté onion in butter over medium heat until translucent.","Add corn and sauté briefly, about 30 seconds.","Add milk and bring to a boil.","Whisk in polenta, salt and pepper. Cook until thickened, about 3 minutes.","Add cheese and stir until melted. Serve 1/3 cup."],
+    notes: "For a creamier consistency, add more milk 1/4 cup at a time."
+  },
+  {
+    id: 23, name: "Spicy Peanut & Shrimp Salad", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "4", calories: 410,
+    category: "Seafood",
+    nutrition: {carbs: "50g", protein: "33g", fat: "8g", fiber: "6g", sodium: "714mg"},
+    ingredients: ["1/4 cup white or yellow miso","1/3 cup rice wine vinegar","2 tablespoons peanut butter","2 tablespoons water","1 tablespoon honey","Pinch chili flakes","4 egg wontons or egg roll wrappers","3 cups shredded napa cabbage","1 cup sliced red onion","1 cup thinly sliced carrots","1 cup broccoli florets","16 cooked shrimp, 16/20 size"],
+    instructions: ["Combine all dressing ingredients in a blender and puree until smooth. Set aside.","Preheat oven to 400°. Cut wontons in half to form triangles. Place on oiled baking sheet.","Bake wontons 8-10 minutes until golden brown.","Combine cabbage, red onion, carrots and broccoli. Toss with dressing.","Divide into 4 servings and top with 2 baked wontons and 4 shrimp."],
+    notes: ""
+  },
+  {
+    id: 24, name: "Sourdough Discard Granola", source: "Canyon Ranch",
+    time: "60 min", difficulty: "Moderate", servings: "25 (3 Tbsp)", calories: 165,
+    category: "Breakfast",
+    nutrition: {carbs: "17g", protein: "6g", fat: "9g", fiber: "4g", sodium: "141mg"},
+    ingredients: ["250 gm (1 cup) sourdough starter","50 gm (1/4 cup) olive oil","50 gm (1/4 cup) coconut sugar","1 tablespoon vanilla extract","1 teaspoon cinnamon","360 gm (2 1/2 cups) rolled oats","215 gm mixed nuts of choice","100 gm sunflower seeds","80 gm chia seeds","50 gm hemp seeds","1 teaspoon salt"],
+    instructions: ["Heat oven to 275°F.","Combine all ingredients well.","Spread on parchment-lined sheet pans in thin layers.","Toast 40 minutes, stirring every 10 minutes, until crispy and browned.","Leave granola to cool in oven to remove lingering moisture."],
+    notes: ""
+  },
+  {
+    id: 25, name: "Beef, Broccolini & Parsley Chimichurri", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Moderate", servings: "10 (4 oz)", calories: 317,
+    category: "Beef",
+    nutrition: {carbs: "17g", protein: "38g", fat: "11g", fiber: "5g", sodium: "200mg"},
+    ingredients: ["40 ounces steak","1/4 cup chopped Italian parsley","1/4 cup extra virgin olive oil","2 tablespoons water","2 tablespoons minced shallots","2 tablespoons minced garlic","1 teaspoon dried oregano","1 tablespoon red wine vinegar","1/2 teaspoon sea salt","1 cup sliced shallots (for pickling)","2/3 cup distilled white vinegar","1/3 cup water","1 tablespoon sugar","1 teaspoon salt","1 teaspoon black peppercorns","1 tablespoon mustard seeds","3 bunches blanched broccolini","1 teaspoon olive oil"],
+    instructions: ["Pan roast, broil, or grill steak to desired temperature. Let beef rest.","Combine chimichurri ingredients in a bowl or blender.","Heat oven to 400°F. Roast broccolini with olive oil, salt and pepper, 5-10 minutes.","For pickled shallots: heat all pickling ingredients except shallots to boil, pour over shallots, steep 5 minutes. Keeps 6 weeks refrigerated."],
+    notes: ""
+  },
+  {
+    id: 26, name: "Artisan Wheat Bread", source: "Canyon Ranch",
+    time: "24 hrs (30 min active)", difficulty: "Moderate", servings: "1 loaf (13 slices)", calories: 105,
+    category: "Bread/Baking",
+    nutrition: {carbs: "21g", protein: "3g", fat: "3g", fiber: "2g", sodium: "226mg"},
+    ingredients: ["200g whole wheat flour","120g high extraction flour","80g high gluten/bread flour","100g starter","292g warm water","10g salt"],
+    instructions: ["Combine warm water & starter; starter should float if ready.","Add flours & bring dough together, 4-5 minutes of gentle turning. Add salt, mix until just incorporated. Rest 30 minutes, then fold dough (4-5 folds). Repeat folding 2-3 more times at 15-30 minute intervals. Rest 1 hour then shape. Cover and refrigerate overnight.","Next day, let bread come to room temp. Heat Dutch oven to 500°F. Bake covered 20 minutes, then uncover and bake another 15-20 minutes."],
+    notes: "A classic no-knead sourdough bread. Start it the day before."
+  },
+  {
+    id: 27, name: "Feeding the Sourdough Starter", source: "Canyon Ranch",
+    time: "5 min", difficulty: "Easy", servings: "N/A", calories: 0,
+    category: "Bread/Baking",
+    nutrition: {carbs: "-", protein: "-", fat: "-", fiber: "-", sodium: "-"},
+    ingredients: ["1/4 cup (50g) starter","1/2 cup (75g) flour","1/3 cup (100g) water"],
+    instructions: ["Mix together and place in a clean container. Leave on counter if using same day; otherwise refrigerate.","Feel free to divide and feed different flours for different breads."],
+    notes: "Feed starter each time you use it. If a gray film develops, scrape it off and use what's underneath."
+  },
+  {
+    id: 28, name: "Sourdough Discard Einkorn Crackers", source: "Canyon Ranch",
+    time: "30 min active", difficulty: "Moderate", servings: "40 crackers", calories: 35,
+    category: "Bread/Baking",
+    nutrition: {carbs: "5g", protein: "1g", fat: "1g", fiber: "1g", sodium: "45mg"},
+    ingredients: ["1/2 cup (70g) einkorn flour (or all-purpose)","1/2 cup (70g) high-extraction flour (or whole wheat)","200g sourdough starter","4 tablespoons (55g) melted butter (or 3T olive oil for vegan)","1 teaspoon (5g) salt"],
+    instructions: ["Preheat oven to 400°F.","Combine all ingredients and knead to a smooth dough.","Divide into 4 balls. Rest 10-15 minutes covered. Roll out very thin between parchment. Prick with fork, cut into triangles.","Bake 10-12 minutes until nicely browned."],
+    notes: ""
+  },
+  {
+    id: 29, name: "Sourdough Chocolate Chip Cookies", source: "Canyon Ranch",
+    time: "30 min active", difficulty: "Moderate", servings: "60 cookies", calories: 129,
+    category: "Dessert",
+    nutrition: {carbs: "17g", protein: "2g", fat: "6g", fiber: "1g", sodium: "43mg"},
+    ingredients: ["185 gm unsalted butter, browned & cooled","200 gm sugar","200 gm brown sugar","3 egg yolks","5 gm vanilla extract","240 gm sourdough starter","380 gm all-purpose flour","4 gm baking powder","3 gm baking soda","2 gm sea salt","500 gm chocolate chips"],
+    instructions: ["Heat oven to 375°F.","Brown the butter: melt and boil until golden and toasty. Cool to 185g.","Mix flour, baking soda, baking powder.","Whisk melted butter, sugars, vanilla. Whisk in eggs, then starter. Stir in dry mixture briskly for 45 seconds. Add chips. Chill dough 1-2 hours if possible.","Scoop teaspoon-size rounds onto parchment-lined sheets, 1 inch apart. Bake 8-12 minutes until just firm."],
+    notes: ""
+  },
+  {
+    id: 30, name: "Neapolitan Sourdough Pizza Crust", source: "Canyon Ranch",
+    time: "3 hrs (30 min active)", difficulty: "Moderate", servings: "2 pizza crusts", calories: 130,
+    category: "Bread/Baking",
+    nutrition: {carbs: "5g", protein: "2g", fat: "1g", fiber: "1g", sodium: "90mg"},
+    ingredients: ["375 gm warm water","100 gm active sourdough starter","10 gm salt","500 gm flour (blend or all-purpose or bread flour)"],
+    instructions: ["Mix starter, salt, and water. Add flour and mix until incorporated. Rest 30 minutes.","Stretch and fold: pull dough up and into center, turning vessel. Repeat 8-10 times. Rest 30 minutes. Repeat 3-4 times total.","Bulk ferment at room temperature 4-18 hours until doubled.","Divide into 4 portions, shape into balls, refrigerate 6 hours to 3 days.","Pull dough out before baking. Set oven to 550°F. Shape into 10-inch round. Bake on parchment until blistered, about 5-6 minutes."],
+    notes: "Top with classic Margherita (tomato sauce, mozzarella, parmesan) or kale and crème fraîche."
+  },
+  {
+    id: 31, name: "Sprouted Multigrain Bread", source: "Canyon Ranch",
+    time: "3 hrs (30 min active)", difficulty: "Moderate", servings: "2 loaves", calories: 110,
+    category: "Bread/Baking",
+    nutrition: {carbs: "20g", protein: "4g", fat: "1g", fiber: "2g", sodium: "191mg"},
+    ingredients: ["1 cup + 2 tablespoons warm water","1 tablespoon active dry yeast","1/4 cup honey","2 tablespoons molasses","3/4 cup cooked multigrain cereal","2 1/4 cups bread flour","2 cups whole wheat flour","1/4 cup vital wheat gluten flour","1 tablespoon salt","3/4 cup sprouted grains (quinoa, amaranth, barley, spelt, millet)"],
+    instructions: ["Preheat oven to 375°F when ready to bake.","Stir yeast, honey & molasses into warm water. Let sit until foamy, about 5 minutes.","Add cereal & dry ingredients. Knead until smooth and elastic, about 5 minutes. Add sprouted grains and knead until combined.","Let rise 1-2 hours until doubled.","Divide in half, shape into loaves for greased bread pans.","Rise again about 30 minutes until 2 inches above pan rim. Bake 40-45 minutes until 180-200°F. Cool 20 minutes before slicing."],
+    notes: ""
+  },
+  {
+    id: 32, name: "Hot Chocolate", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4 (1/4 cup)", calories: 100,
+    category: "Beverage",
+    nutrition: {carbs: "15g", protein: "2g", fat: "4g", fiber: "trace", sodium: "73mg"},
+    ingredients: ["2 tablespoons chopped dark chocolate","1 cup fat free skim milk, or other milk"],
+    instructions: ["In a medium saucepan add chocolate and milk.","Heat milk whisking to blend chocolate with the milk. Let boil up 3 times to make thicker & richer."],
+    notes: "Add spices for more comfort: cinnamon, cardamom, chili, nutmeg."
+  },
+  {
+    id: 33, name: "Chocolate Truffles", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Moderate", servings: "20 truffles", calories: 50,
+    category: "Dessert",
+    nutrition: {carbs: "6g", protein: "1g", fat: "2g", fiber: "trace", sodium: "14mg"},
+    ingredients: ["1/3 cup evaporated skim milk","1 cup dark chocolate, chopped","1/2 cup chopped dried cherries (or other dried fruit/nuts)","3 tablespoons cocoa (or toasted coconut, or chopped nuts)"],
+    instructions: ["Heat milk in a small saucepan. Off heat, add chocolate and stir until melted. Mix in cherries. Cool and set (can refrigerate).","Portion into 1-inch round balls. Coat with cocoa. Refrigerate until ready to serve."],
+    notes: "The better quality chocolate you use, the better the truffles. Can also roll in chopped nuts or coconut."
+  },
+  {
+    id: 34, name: "Chocolate Orange Chia Pudding", source: "Canyon Ranch",
+    time: "15 min + overnight", difficulty: "Easy", servings: "5 (2 oz)", calories: 174,
+    category: "Dessert",
+    nutrition: {carbs: "19g", protein: "5g", fat: "9g", fiber: "5g", sodium: "23mg"},
+    ingredients: ["1 tablespoon fresh orange juice","1 cup almond milk, plain","1/2 teaspoon maple syrup","2 tablespoons cocoa powder","1/4 cup chia seeds","1/2 teaspoon orange zest","1 orange, peeled and segmented","2 ounces dark chocolate"],
+    instructions: ["Combine orange juice, almond milk, maple syrup and cocoa powder. Stir until smooth.","Whisk in chia seeds and orange zest until pudding begins to thicken.","Refrigerate overnight.","Garnish with orange segment and shaved dark chocolate."],
+    notes: ""
+  },
+  {
+    id: 35, name: "Chocolate Dream Chiffon", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "12", calories: 95,
+    category: "Dessert",
+    nutrition: {carbs: "20g", protein: "4g", fat: "1g", fiber: "1g", sodium: "43mg"},
+    ingredients: ["1 package organic tofu, or 4 ripe avocados","3/4 cup honey","3 teaspoons vanilla extract","1/2 cup cocoa powder"],
+    instructions: ["In a food processor, soften tofu until creamy. Combine honey, cocoa and vanilla and add to tofu. Blend for 1 minute. Pour into dessert cups and chill."],
+    notes: "Swapping 4 avocados for tofu yields a thicker dessert full of healthy fat & fiber (about 157 cal/serving)."
+  },
+  {
+    id: 36, name: "High Protein Yogurt Pancakes", source: "My Recipe",
+    time: "20 min", difficulty: "Easy", servings: "4", calories: 0,
+    category: "Breakfast",
+    nutrition: {carbs: "-", protein: "-", fat: "-", fiber: "-", sodium: "-"},
+    ingredients: ["1 cup cottage cheese","1 cup plain yogurt","3 eggs, separated","1/2 teaspoon baking soda","1 cup all-purpose flour","Dash salt","1 tablespoon sugar","Butter or grapeseed or other neutral oil as needed"],
+    instructions: ["Beat together the cottage cheese, yogurt, and egg yolks. Combine baking soda, flour, salt and sugar. Beat egg whites until fairly stiff but not dry. (Or combine everything in a blender and skip separating the eggs.)","Heat a griddle or large skillet over medium-low heat. Stir flour mixture into cheese mixture, blending well but not beating. Gently fold in beaten egg whites; they should remain somewhat distinct in batter.","Add about 1 tablespoon butter or oil to griddle and coat surface. When hot, add batter by the heaping tablespoon. Cook until lightly browned on bottom, 3 to 5 minutes, then turn and cook second side. Serve immediately."],
+    notes: ""
+  },
+  {
+    id: 37, name: "Smoked Chicken Enchiladas", source: "Canyon Ranch",
+    time: "2.5 hrs", difficulty: "Moderate", servings: "4", calories: 479,
+    category: "Poultry",
+    nutrition: {carbs: "39g", protein: "34g", fat: "15g", fiber: "7g", sodium: "631mg"},
+    ingredients: ["12 oz green enchilada sauce","18 oz smoked chicken","4 oz Oaxaca cheese","8 corn tortillas","16 oz turmeric vegetable rice","4 oz green cabbage, minced","4 oz avocado, sliced","7 oz tomatillos","1.5 oz jalape\u00F1o","1 oz Anaheim chili","3 oz poblano pepper","2 Tbsp cilantro, chopped","1/2 tsp salt","1/2 cup chicken stock","1 pound chicken thigh","2 oz green chilies, roasted","1/2 Tbsp cumin seed powder","2 tsp olive oil","1/2 cup red peppers, diced","1/2 cup carrots, diced","1/2 cup onion, diced","1/2 cup green peas","1/2 cup corn","3/4 cup basmati rice","3/4 tsp turmeric","1.5 cups chicken stock","1 tsp salt"],
+    instructions: ["For enchilada sauce: Wash tomatillos and peppers, place on a sheet pan. Roast at 450\u00B0F until nicely browned (about 20 minutes). Remove stems from peppers and blend with tomatillos. Stir in cilantro, salt, and chicken stock.","For smoked chicken: Set smoker to 200-250\u00B0F and smoke chicken thighs for 20 minutes. Transfer to a baking pan, toss with roasted green chilies, 1/4 cup enchilada sauce, chicken stock, cumin, and salt. Cover and braise at 350\u00B0F for 1 hour. Shred chicken and keep in braising liquid.","For turmeric rice: In a pot over medium heat, cook olive oil and vegetables for 5 minutes. Add rice, cook 5 more minutes. Add turmeric, then chicken stock. Bring to boil, reduce to simmer, cover. Cook until absorbed (about 20 minutes). Salt and fluff.","To assemble: Warm tortillas on a grill or in oven. Place 2 oz smoked chicken and 1/2 oz Oaxaca cheese on each tortilla and roll. Top with enchilada sauce and bake at 350\u00B0F until heated through (10-15 minutes). Serve 2 enchiladas with rice, garnished with cabbage and avocado."],
+    notes: "Smoking the chicken adds a whole new dimension of flavor. Customize your enchilada sauce \u2014 fewer chilies for mild, more tomatillos for tang, skip or add extra cilantro as you like."
+  },
+  {
+    id: 38, name: "Roasted Vegetable Salsa", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "6", calories: 235,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "21g", protein: "13g", fat: "12g", fiber: "1g", sodium: "397mg"},
+    ingredients: ["3 medium tomatoes","1 red bell pepper","2 medium yellow onions","1 jalape\u00F1o","1 Tbsp cilantro, chopped","1/2 tsp black pepper","1 tsp dry oregano","1 tsp salt","1 Tbsp white vinegar","1 tsp lemon juice"],
+    instructions: ["Preheat oven to 425\u00B0F. Lightly spray a baking sheet with canola oil spray.","Halve and core tomatoes and red bell pepper. Peel and halve the onions. Cut jalape\u00F1o in half and remove the stem.","Place tomatoes, pepper, onions, and jalape\u00F1o on the baking sheet and roast for 30 to 40 minutes or until caramelized. Allow to cool.","Place roasted vegetables, cilantro, black pepper, oregano, salt, vinegar, and lemon juice in a blender and puree."],
+    notes: "Deseed jalape\u00F1o if you want to make the salsa less spicy."
+  },
+  {
+    id: 39, name: "Whole Wheat Pizza Crust", source: "Canyon Ranch",
+    time: "1 hr 45 min", difficulty: "Moderate", servings: "22 crusts", calories: 115,
+    category: "Bread/Baking",
+    nutrition: {carbs: "23g", protein: "3g", fat: "trace", fiber: "2g", sodium: "68mg"},
+    ingredients: ["2 2/3 cups warm water","1 tsp active dry yeast","1 tsp evaporated cane sugar","1 tsp salt","1.5 tsp olive oil","14 oz whole wheat flour","13 oz all-purpose flour"],
+    instructions: ["Add warm water, yeast, sugar, salt, and olive oil in the bowl of a stand mixer with a dough hook attachment. Add flours and mix until the dough separates from the sides of the bowl. Add more flour if too sticky.","Cover the bowl and let rest for 1 hour.","Divide dough into 2 oz pieces, rounding each piece. You can refrigerate (use within a few days) or freeze (use within a month).","When ready to use, place dough on the counter covered, preferably in a warm spot, and allow it to double in size.","Coat the dough in flour or cornmeal and roll out to desired size. Add toppings of choice and cook."],
+    notes: "You don't need a fancy pizza oven \u2014 just a pizza stone. Heat it in your oven to 500\u00B0F, then carefully transfer your pizza onto the stone with a pizza peel."
+  },
+  {
+    id: 40, name: "Chicken Bone Broth", source: "Canyon Ranch",
+    time: "8-12 hrs", difficulty: "Advanced", servings: "16 (3/4 cup)", calories: 28,
+    category: "Soup",
+    nutrition: {carbs: "1g", protein: "2g", fat: "1g", fiber: "trace", sodium: "211mg"},
+    ingredients: ["10 lbs chicken bones","1.5 gallons water","8 oz carrots, chopped","8 oz celery, chopped","16 oz yellow onions, chopped","2 tsp salt"],
+    instructions: ["Add chicken bones to a large stock pot and pour in water. Turn heat to medium-high and bring to a boil.","Immediately reduce to a simmer. Maintain a nice gentle simmer.","For the next 4 hours, check your stock intermittently for water level and fat. Cover the pot slightly with a little opening. Add more water as needed to maintain the level.","Remove fat as it accumulates by skimming it off the top with a ladle or spoon.","After 4 hours, add in your washed and roughly chopped vegetables. Return to a simmer and continue watching.","After 8-12 hours total, carefully strain off the bone broth, season with salt, and cool."],
+    notes: "A very versatile ingredient \u2014 use it as your liquid for making rice or quinoa, or as the base of other soups like Matzo Ball, Chicken Noodle, or Ajiaco. To add more flavor, roast your chicken bones and vegetables before adding them to the stock pot. The darker they are, the more depth of flavor."
+  },
+  {
+    id: 41, name: "Carrot Ginger Soup", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "8 (6 oz)", calories: 83,
+    category: "Soup",
+    nutrition: {carbs: "15g", protein: "1g", fat: "2g", fiber: "2g", sodium: "251mg"},
+    ingredients: ["4 tsp olive oil","1 lb carrots, peeled & diced","4 oz yellow onion, diced","4 oz sweet potatoes, peeled and diced","6 cups vegetable stock","2 tsp garlic, minced","2 Tbsp ginger, minced","2 tsp thyme","2 Tbsp honey","1 tsp salt","1 tsp black pepper"],
+    instructions: ["In a large pot over medium-high heat, cook carrots, onions, and sweet potatoes in olive oil until the carrots and sweet potatoes begin to caramelize.","Add minced garlic and ginger and cook for only a minute.","Add vegetable stock, bring to a boil, then reduce to a simmer. Continue simmering until carrots and sweet potatoes are soft.","Add contents of the pot to a blender along with thyme, honey, salt, pepper, and pur\u00E9e until smooth and silky."],
+    notes: "Carrots are loaded with vitamin A and beta-carotene and are a great source of fiber. Ginger helps fight the flu and common cold, reduces nausea, and aids digestion. You can also use an immersion blender right in the pot."
+  },
+  {
+    id: 42, name: "Agua Fresca Sports Drink", source: "Canyon Ranch",
+    time: "25 min", difficulty: "Easy", servings: "8 (1 cup)", calories: 61,
+    category: "Beverage",
+    nutrition: {carbs: "16g", protein: "trace", fat: "trace", fiber: "trace", sodium: "152mg"},
+    ingredients: ["24 oz watermelon","4.5 Tbsp evaporated cane sugar","1/2 tsp salt","4 cups hot water","14 Tbsp lime juice"],
+    instructions: ["Wash the outside of the watermelon, then cut off the rind. Weigh the remaining fruit and dice (you need 24 oz of usable fruit).","Place the diced watermelon into a blender and pur\u00E9e.","Place 4 cups of hot water into a large pitcher, add evaporated cane sugar and salt. Stir until dissolved.","Using a fine mesh strainer, strain the pur\u00E9ed watermelon into the pitcher.","Add lime juice and stir to combine."],
+    notes: "Great for exercise lasting longer than an hour, hot environments, or heavy perspiration. Provides carbohydrates for performance and electrolytes for hydration."
+  },
+  {
+    id: 43, name: "Hibiscus Prickly Pear Sports Drink", source: "Canyon Ranch",
+    time: "20 min", difficulty: "Easy", servings: "8 (1 cup)", calories: 57,
+    category: "Beverage",
+    nutrition: {carbs: "15g", protein: "trace", fat: "trace", fiber: "trace", sodium: "159mg"},
+    ingredients: ["37 oz hot water","1/4 cup dried hibiscus leaves","3 Tbsp evaporated cane sugar","1/2 tsp salt","11 oz strawberries, frozen or fresh","9 oz lemon juice","5.5 oz prickly pear pur\u00E9e"],
+    instructions: ["Defrost frozen strawberries beforehand.","Place hot water into a large pitcher along with dried hibiscus leaves and steep for 5 minutes.","Strain out the hibiscus leaves, then add the evaporated cane sugar and salt. Stir until dissolved.","Place strawberries in a blender with the lemon juice and pur\u00E9e until smooth. Using a fine mesh strainer, strain into the pitcher of hibiscus tea.","Add the prickly pear pur\u00E9e and stir until combined."],
+    notes: "Choose a sports drink when exercising for longer than an hour, in very hot environments, or if your perspiration is salty and heavy."
+  },
+  {
+    id: 44, name: "Chocolate Chip Cookies", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "19 (2 each)", calories: 167,
+    category: "Dessert",
+    nutrition: {carbs: "26g", protein: "1g", fat: "7g", fiber: "trace", sodium: "115mg"},
+    ingredients: ["2 oz unsalted butter","3 oz low-fat cream cheese","8 oz brown sugar","1 oz egg yolk","1 tsp vanilla extract","5 oz all-purpose flour","2.5 oz whole wheat flour","1/2 tsp baking soda","1/2 tsp salt","6.5 oz semi-sweet chocolate chips"],
+    instructions: ["In a stand mixer with the paddle attachment, cream together butter, cream cheese, and brown sugar until light and fluffy.","Add egg yolks and vanilla and mix until combined.","In a separate bowl, sift together dry ingredients (flours, baking soda, and salt).","Add dry ingredients and chocolate chips to the stand mixer and mix on low speed, about 10 seconds, until combined.","Portion 3/4 oz cookies onto a parchment-lined baking sheet. Bake at 325\u00B0F for 7 minutes. Lightly flatten each cookie, rotate the baking sheet, and bake an additional 3 minutes.","Cool completely before enjoying."],
+    notes: "Canyon Ranch\u2019s famous chocolate chip cookies use low-fat cream cheese instead of all butter to lower the fat, plus whole wheat flour for more fiber, protein, and vitamins without extra calories."
+  },
+  {
+    id: 45, name: "Oatmeal Cranberry Cookies", source: "Canyon Ranch",
+    time: "35 min", difficulty: "Easy", servings: "19 (2 each)", calories: 146,
+    category: "Dessert",
+    nutrition: {carbs: "23g", protein: "3g", fat: "4g", fiber: "trace", sodium: "103mg"},
+    ingredients: ["2 oz unsalted butter","3 oz low-fat cream cheese","7 oz brown sugar","2 egg yolks","1 tsp vanilla extract","4 oz oat flour","6 oz rolled oats","1/2 tsp baking soda","1/2 tsp cinnamon","1/2 tsp salt","2 oz dried cranberries"],
+    instructions: ["In a stand mixer with the paddle attachment, cream together butter, cream cheese, and brown sugar until light and fluffy.","Add egg yolks and vanilla, mix briefly about 10 seconds until combined.","Combine oat flour, rolled oats, baking soda, cinnamon, salt, and dried cranberries in a bowl.","Add dry ingredients into the stand mixer on low speed until thoroughly mixed.","Portion 3/4 oz cookies onto a parchment-lined baking sheet.","Bake at 325\u00B0F for 7 minutes. Lightly flatten each cookie, rotate the pan, and bake an additional 2-3 minutes until golden brown.","Cool completely before enjoying."],
+    notes: "These also taste great with raisins or even chocolate chips."
+  },
+  {
+    id: 46, name: "Coconut Shrimp Soba Noodles", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Medium", servings: "5", calories: 408,
+    category: "Seafood",
+    nutrition: {carbs: "47g", protein: "21g", fat: "17g", fiber: "4g", sodium: "536mg"},
+    ingredients: ["8 oz soba noodles","8 oz red cabbage, shredded","5 oz cucumber, julienned","5 oz cherry tomatoes","2 Tbsp canola oil","1 oz ginger, minced","8 oz shrimp","5 oz red peppers, julienned","1 oz light coconut milk","2.5 oz scallions, chopped","7 oz tofu, diced","1 tsp salt","3 oz peanuts, roasted","1.5 oz Thai basil, chopped","1.5 oz mint, chopped"],
+    instructions: ["Cook soba noodles according to package directions. Drain and rinse under cold water.","Toss noodles with shredded red cabbage, julienned cucumber, and cherry tomatoes.","Heat canola oil in a pan over medium-high heat. Sauté ginger briefly, then add shrimp and red peppers. Cook until shrimp are pink and cooked through.","Add coconut milk and scallions, toss to combine.","Add tofu, season with salt, and gently mix.","Serve noodle mixture topped with shrimp, garnished with roasted peanuts, Thai basil, and mint."],
+    notes: ""
+  },
+  {
+    id: 47, name: "Brussels Sprouts and Sweet Potato Hash", source: "Canyon Ranch",
+    time: "55 min", difficulty: "Medium", servings: "4", calories: 174,
+    category: "Vegetable",
+    nutrition: {carbs: "24g", protein: "2g", fat: "7g", fiber: "4g", sodium: "151mg"},
+    ingredients: ["9 oz sweet potato","7 oz yellow onion, diced","1.5 Tbsp olive oil","1/4 tsp salt","1/4 tsp pepper","5 oz roasted Brussels sprouts","1 Tbsp toasted slivered almonds","1 tsp balsamic reduction","6 oz Brussels sprouts (for roasting)","1 tsp olive oil (for roasting)","1 Tbsp slivered almonds (for toasting)"],
+    instructions: ["Shred the sweet potato and onion with a box grater.","Add olive oil to a pan over medium-high heat and cook sweet potato and onion until sweet potatoes are tender. Season with salt and pepper.","Add in roasted Brussels sprouts and cook until warmed through.","Split hash between 4 plates, then garnish each plate with toasted almonds and a drizzle of balsamic reduction.","To Make Roasted Brussels Sprouts: Preheat oven to 425°F. Trim the ends of the Brussels sprouts, cut in half. Place onto a sheet pan, drizzle with olive oil, season with salt and pepper. Roast for 20-30 minutes until tender and golden brown.","To Make Toasted Slivered Almonds: Preheat oven to 300°F. Place slivered almonds onto a sheet pan and toast until golden brown (about 10 minutes)."],
+    notes: "Balsamic reduction is made by simmering balsamic vinegar until reduced by 75% — thick and syrupy. Cook at a bare simmer to avoid burning."
+  },
+  {
+    id: 48, name: "Chicken Meatballs with Soy Glaze & Pineapple", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "7", calories: 141,
+    category: "Poultry",
+    nutrition: {carbs: "12g", protein: "8g", fat: "6g", fiber: "1g", sodium: "295mg"},
+    ingredients: ["8 oz chicken thigh, ground","5 oz onion, minced","1 oz yellow bell pepper, diced","1 oz red bell pepper, diced","1 tsp garlic, minced","1 tsp sage, dry","1/2 tsp apple cider vinegar","1/2 tsp salt","1/4 tsp pepper","1/4 tsp ground ginger","4 Tbsp panko bread crumbs","7 Tbsp soy glaze","8 oz pineapple, diced","1 oz scallions, chopped"],
+    instructions: ["Preheat the oven to 400°F.","Mix together ground chicken, onion, bell peppers, garlic, sage, apple cider vinegar, salt, pepper, ground ginger, and panko bread crumbs.","Shape into 21 meatballs (about 1-inch) and place in a baking dish large enough to hold them all.","Pour soy glaze over meatballs and bake until cooked through (internal temperature of 165°F, about 18-20 minutes).","Remove from oven and add diced pineapple and chopped scallions."],
+    notes: "To make soy glaze: Combine 2 Tbsp canola oil, 2 Tbsp tamari, 1.5 Tbsp honey, 1 Tbsp rice vinegar, 1/2 tsp garlic powder, and 1/4 tsp ground ginger in a blender and purée until smooth."
+  },
+  {
+    id: 49, name: "Jerk Chicken", source: "Canyon Ranch",
+    time: "20 min", difficulty: "Easy", servings: "4", calories: 205,
+    category: "Poultry",
+    nutrition: {carbs: "3g", protein: "24g", fat: "10g", fiber: "trace", sodium: "148mg"},
+    ingredients: ["1/4 cup red onion, diced","1/2 cup scallion, chopped","3 Tbsp garlic, minced","3 Tbsp ginger juice","3 Tbsp fresh orange juice","1 Tbsp low-sodium tamari","2 Tbsp Worcestershire sauce","1 Tbsp brown sugar","1 Tbsp fresh thyme","2 Tbsp ground allspice","1 Tbsp ground cinnamon","1 Tbsp ground nutmeg","3 Tbsp extra virgin olive oil","1/4 cup rum (optional)","2 habanero peppers","1/2 tsp sea salt","4 chicken breasts (4 oz each)"],
+    instructions: ["Place all ingredients, except chicken, in a blender and purée until smooth.","Place chicken breasts in a shallow glass baking dish and pour marinade over the top.","Place in refrigerator and marinate for 20 minutes to 24 hours.","Preheat the oven to 400°F.","Heat a skillet on medium-high and sear chicken for 1 minute per side.","Finish cooking the chicken in the oven for 15-20 minutes or until it reaches an internal temperature of 165°F."],
+    notes: "Marinating overnight gives the best flavor. Adjust habanero to taste for heat level."
+  },
+  {
+    id: 50, name: "Berries with Lemon Curd", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Medium", servings: "8", calories: 179,
+    category: "Dessert",
+    nutrition: {carbs: "25g", protein: "3g", fat: "7g", fiber: "3g", sodium: "33mg"},
+    ingredients: ["1/2 tsp lemon zest","4.5 oz lemon juice","3 whole eggs","1 egg yolk","1/2 cup evaporated cane sugar","2 oz butter, unsalted","1 1/3 cup fresh raspberries","1 1/3 cup fresh blueberries","1 1/3 cup fresh blackberries"],
+    instructions: ["Mix lemon zest and evaporated cane sugar in a pot.","Add lemon juice and eggs.","Turn the heat to medium and stir constantly with a rubber spatula until the mixture thickens. Do this quickly so the eggs do not scramble.","Remove from heat and add butter; stir until combined.","Strain curd through cheesecloth and place in a shallow container. Top with plastic wrap and cool in the fridge until set.","To serve: Place 1/2 cup of mixed berries in a bowl and top with 2 oz of lemon curd."],
+    notes: ""
+  },
+  {
+    id: 51, name: "Blueberry Muffins", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Medium", servings: "12 (1 muffin each)", calories: 138,
+    category: "Bread/Baking",
+    nutrition: {carbs: "24g", protein: "3g", fat: "3g", fiber: "1g", sodium: "104mg"},
+    ingredients: ["4 oz powdered sugar","1 oz butter, unsalted","1 oz low-fat cream cheese","1 egg","1/2 tsp vanilla extract","1/2 cup 2% milk","1/4 tsp baking soda","1/2 Tbsp baking powder","3 oz all-purpose flour","4 oz whole wheat flour","1/2 tsp salt","8 oz blueberries"],
+    instructions: ["Add powdered sugar, butter, and low-fat cream cheese to a stand mixer with paddle attachment and blend until light and fluffy. Scrape down the sides of the bowl.","Turn mixer to low speed and add the egg. Mix until fully incorporated, scrape down the bowl.","Combine milk and vanilla and slowly add to the mixer on low speed. Scrape down the bowl.","Fold in dry ingredients: baking soda, baking powder, flours, and salt. Mix on low speed until combined.","Remove the bowl and add blueberries. Gently mix with a spoon to incorporate.","Scoop 2.5 oz of batter into a lightly sprayed muffin pan.","Bake at 375°F for 12-15 minutes, or until a toothpick placed in the center comes out clean."],
+    notes: "Requires a stand mixer with paddle attachment."
+  },
+  {
+    id: 52, name: "Aguachile Marinade", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "14", calories: 12,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "3g", protein: "trace", fat: "trace", fiber: "trace", sodium: "124mg"},
+    ingredients: ["1 cup lime juice","2 oz shallots, sliced","1 Tbsp yellow bell pepper, diced","1 cup water","1 1/2 tsp lime zest","1 Tbsp evaporated cane sugar","1 tsp salt"],
+    instructions: ["Combine all ingredients in a blender and purée.","Allow to sit in the fridge for 15 minutes before straining out solids."],
+    notes: "Great as a marinade for shrimp or fish ceviche-style dishes."
+  },
+  {
+    id: 53, name: "Artichoke Dip", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "16", calories: 52,
+    category: "Side Dish",
+    nutrition: {carbs: "5g", protein: "3g", fat: "2g", fiber: "1g", sodium: "178mg"},
+    ingredients: ["2 cups artichoke hearts, canned","1/2 cup cream cheese, low-fat","1/2 cup sour cream","1 oz parmesan cheese, grated","2 oz mozzarella cheese, shredded","2 Tbsp lemon juice","1.5 tsp salt","1.5 tsp black pepper","1/2 cup green chilies, diced"],
+    instructions: ["Combine cream cheese, sour cream, parmesan, mozzarella, lemon juice, salt, pepper, and chilies in a food processor and mix well.","Add in artichokes and pulse until the artichokes just start to break down. Keep it chunky.","Transfer to a crockpot on high until cheese has melted through. Turn heat down to low and enjoy!"],
+    notes: ""
+  },
+  {
+    id: 54, name: "No-jito Mocktail", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4", calories: 39,
+    category: "Beverage",
+    nutrition: {carbs: "10g", protein: "trace", fat: "trace", fiber: "trace", sodium: "3mg"},
+    ingredients: ["1/2 cup lime juice","12 mint leaves","1/4 cup simple syrup","2 1/4 cups sparkling water"],
+    instructions: ["Place lime juice, simple syrup, and mint leaves into a shaker and shake until combined.","Pour equal portions into 4 serving glasses.","Fill each with ice, then top with sparkling water."],
+    notes: "To make simple syrup: Mix equal parts water and evaporated cane sugar. Honey or maple syrup also work as substitutions."
+  },
+  {
+    id: 55, name: "Prickly Pear Sunrise Mocktail", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "4", calories: 45,
+    category: "Beverage",
+    nutrition: {carbs: "10g", protein: "trace", fat: "trace", fiber: "1g", sodium: "4mg"},
+    ingredients: ["1/3 cup prickly pear purée","1/4 cup lemon juice","1/2 cup orange juice","1 1/4 cup sparkling water","4 orange wheels for garnish"],
+    instructions: ["Place prickly pear purée, lemon juice, and orange juice into a shaker. Shake until combined and pour equal portions into 4 glasses.","Fill each glass with ice, then top with sparkling water.","Garnish each glass with an orange wheel."],
+    notes: "Prickly pear cactus fruit is available commercially as purée, syrup, frozen, or powder if you can't find fresh."
+  },
+  {
+    id: 56, name: "Lemon Herb Roasted Salmon", source: "Canyon Ranch",
+    time: "1 hr", difficulty: "Medium", servings: "8", calories: 82,
+    category: "Seafood",
+    nutrition: {carbs: "trace", protein: "11g", fat: "3g", fiber: "trace", sodium: "43mg"},
+    ingredients: ["1 pound salmon, skin-on","1/2 tsp olive oil","1 tsp chives, fresh","1 tsp parsley, fresh","1/2 tsp tarragon, fresh","1/4 tsp salt","pinch black pepper","1/2 lemon"],
+    instructions: ["Wash herbs and dry with a towel. Chop and set aside.","Place salmon on a sheet pan lined with parchment paper and lightly spray with oil.","Season salmon with olive oil, herbs, salt, and pepper.","Slice lemon into rings and place on top of salmon in a line.","Roast salmon in a 350°F oven for about 25 minutes, or until done."],
+    notes: "Salmon is rich in omega-3 fatty acids, which help reduce inflammation and lower blood pressure."
+  },
+  {
+    id: 57, name: "Honey Crisp Apple Galette", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Medium", servings: "6", calories: 224,
+    category: "Dessert",
+    nutrition: {carbs: "26g", protein: "3g", fat: "12g", fiber: "3g", sodium: "23mg"},
+    ingredients: ["4 Tbsp unsalted butter","2/3 cup all-purpose flour","1/4 cup whole wheat flour","1 pinch kosher or sea salt","2 Tbsp low-fat or oat milk","1 egg yolk","2 firm apples (Honeycrisp, Granny Smith, or Gala)","1/2 lemon, juice only","1 tsp corn starch","1 tsp organic sugar","1/4 tsp cinnamon","2 Tbsp golden raisins (optional)","1 sprig fresh thyme, leaves only (optional)","1/2 cup heavy cream (for basil whipped cream)","1 leaf fresh basil, minced","1 pinch fine sea salt","1 tsp organic sugar (for whipped cream)"],
+    instructions: ["Place cold butter and flours into a medium bowl. Cut butter into flours with two knives or a pastry cutter. Add salt as you blend.","Add milk and egg yolk, mix with a wooden spoon just until combined and smooth. Do not over mix.","Wrap dough tightly in plastic wrap and refrigerate 30-60 minutes.","Roll dough out to 1/8\u2013 1/4 inch. Cut out 6 circles (4 inches each) and place on a lightly greased baking sheet.","Wash and peel apples, quarter and core them. Slice thinly and toss with remaining filling ingredients.","Arrange seasoned apple slices in the center of each crust, leaving a finger-width border. Roll edges inward. Optionally brush edges with beaten egg and a sprinkle of sugar.","Bake at 350\u00B0F for about 15 minutes until crust is golden all over.","For basil whipped cream: Combine heavy cream, minced basil, pinch of salt, and sugar. Whip until stiff peaks form."],
+    notes: "You can substitute any favorite fresh fruit or berries as the season changes."
+  },
+  {
+    id: 58, name: "Three Sisters Salad", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "6", calories: 160,
+    category: "Salad",
+    nutrition: {carbs: "29g", protein: "11g", fat: "8g", fiber: "9g", sodium: "259mg"},
+    ingredients: ["1/3 cup Dijon mustard","1/2 cup sherry vinegar","1/4 cup red wine vinegar","1/4 cup water","1/4 cup diced shallots","1/4 cup honey","1/4 cup canola oil","2 cups organic spinach","1 cup fresh arugula","1 cup cooked brown tepary beans","1 cup diced roasted butternut squash","1/2 cup chopped red endive","1/4 cup cotija cheese","1 tsp fresh lemon zest","2 Tbsp roasted pumpkin seeds","2 Tbsp roasted sunflower seeds","1 Tbsp chia seeds","1 Tbsp hemp seeds"],
+    instructions: ["Combine all vinaigrette ingredients in a blender except canola oil and blend until well mixed.","Slowly drizzle in canola oil.","Toss spinach, arugula, tepary beans, and roasted butternut squash together with 1/3 cup dressing, cotija cheese, and lemon zest.","Coarsely chop pumpkin and sunflower seeds. Mix with chia and hemp seeds.","Evenly divide salad into bowls. Top each serving with 1 tablespoon of super seed mixture."],
+    notes: "The sherry shallot vinaigrette makes more than needed — save extra for other salads."
+  },
+  {
+    id: 59, name: "Roasted Tomato Vinaigrette", source: "Canyon Ranch",
+    time: "25 min", difficulty: "Easy", servings: "4 (2 Tbsp each)", calories: 40,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "2g", protein: "trace", fat: "4g", fiber: "trace", sodium: "150mg"},
+    ingredients: ["1 medium tomato, peeled and chopped (about 4 oz)","1 tsp balsamic vinegar","1 Tbsp olive oil","1/4 tsp salt"],
+    instructions: ["Peel and chop tomato.","Combine tomato, balsamic vinegar, olive oil, and salt in a blender.","Pur\u00E9e until smooth.","Drizzle over salads or roasted vegetables."],
+    notes: "Extracted from the Bean & Feta Salad with Roasted Vegetables recipe. A light, tangy dressing that pairs well with any salad."
+  },
+  {
+    id: 60, name: "Thousand Island Dressing", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "16 (2 Tbsp each)", calories: 55,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "6g", protein: "1g", fat: "3g", fiber: "trace", sodium: "188mg"},
+    ingredients: ["1/4 cup canola oil mayonnaise","2/3 cup nonfat sour cream","1 Tbsp minced shallots","3/4 cup chili sauce","1/3 cup sweet relish","pinch sea salt","pinch freshly ground black pepper","1/3 cup reduced fat milk"],
+    instructions: ["Combine all ingredients in a blender container and mix well."],
+    notes: ""
+  },
+  {
+    id: 61, name: "Alla Checca Sauce", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Medium", servings: "6 (1/2 cup each)", calories: 50,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "7g", protein: "1g", fat: "3g", fiber: "1g", sodium: "212mg"},
+    ingredients: ["8 medium ripe Roma tomatoes","1/2 tsp sea salt","2 tsp minced garlic","1/2 cup chopped fresh basil leaves","1/2 cup chopped fresh parsley","2 Tbsp extra virgin olive oil","1/4 tsp freshly ground black pepper","1/4 tsp crushed red pepper"],
+    instructions: ["Bring a large pot of water to a boil. Cut a shallow X in the tops of the tomatoes. Drop into boiling water for 2 minutes, then transfer to a bowl of ice water. Core and peel tomatoes.","Chop the peeled tomatoes (about 4 cups). Sprinkle with 1/2 tsp salt and mix well. Place in a colander and allow to drain.","Combine garlic, basil, parsley, olive oil, black pepper, and red pepper in a medium saucepan. Add drained tomatoes and heat until warm.","Serve over pasta."],
+    notes: "A fresh, no-cook-style Italian sauce — vegan and vegetarian friendly."
+  },
+  {
+    id: 62, name: "Apple Cider Vinaigrette", source: "Canyon Ranch",
+    time: "10 min", difficulty: "Easy", servings: "20 (2 Tbsp each)", calories: 25,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "7g", protein: "trace", fat: "0g", fiber: "trace", sodium: "112mg"},
+    ingredients: ["1/4 cup cider vinegar","2 cups apple cider","1/4 cup honey","2 cinnamon sticks","1 tsp sea salt"],
+    instructions: ["Combine all ingredients in a jar with a tight-fitting lid.","Refrigerate overnight.","Remove cinnamon sticks before serving."],
+    notes: "Fat-free dressing — the apple cider and honey provide all the body and sweetness."
+  },
+  {
+    id: 63, name: "Baja Crispy Chicken Tacos", source: "Canyon Ranch",
+    time: "3 hrs", difficulty: "Medium", servings: "4", calories: 350,
+    category: "Poultry",
+    nutrition: {carbs: "25g", protein: "27g", fat: "15g", fiber: "3g", sodium: "286mg"},
+    ingredients: ["4 Tbsp low-fat sour cream","1 Tbsp fresh lime juice","1 Tbsp fresh orange juice","1/2 tsp chili powder","1/8 tsp sea salt","1/4 cup diced avocado","1 cup shredded green cabbage","1/4 cup fresh orange juice (for marinade)","1/4 cup fresh lime juice (for marinade)","1/4 cup tequila (optional)","2 Tbsp olive oil","1 Tbsp chili powder (for marinade)","1 tsp sea salt (for marinade)","4 skinless chicken breast halves, boned and defatted","8 crispy corn taco shells","8 Tbsp grated cheddar cheese","8 Tbsp Pico de Gallo salsa"],
+    instructions: ["In a blender, combine sour cream, 1 Tbsp lime juice, 1 Tbsp orange juice, 1/2 tsp chili powder, 1/8 tsp salt, and avocado. Purée until smooth. Pour over shredded cabbage and toss well. Set aside.","Combine marinade ingredients (1/4 cup OJ, 1/4 cup lime juice, tequila, olive oil, 1 Tbsp chili powder, 1 tsp salt). Place chicken in a shallow glass baking pan, add marinade. Cover and refrigerate 2 hours.","Preheat grill or broiler. Remove chicken from marinade and grill or broil 15-20 minutes until internal temp reaches 165°F. Discard leftover marinade.","Allow chicken to cool slightly, then chop into small pieces.","Divide chicken among 8 taco shells. Top each with 1 Tbsp shredded cheese and 1 Tbsp Pico de Gallo. Serve 2 tacos with 1 cup cabbage salad."],
+    notes: "Includes a creamy avocado cabbage slaw. Marinating for the full 2 hours gives the best flavor."
+  },
+  {
+    id: 64, name: "Bran Muffins", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "10", calories: 140,
+    category: "Bread/Baking",
+    nutrition: {carbs: "26g", protein: "5g", fat: "4g", fiber: "5g", sodium: "147mg"},
+    ingredients: ["3/4 cup whole-wheat flour","3 Tbsp whole wheat pastry flour","1 1/2 tsp baking soda","1/4 tsp salt","2 cups Baker's Bran","1 1/2 tsp ground cinnamon","1 tsp ground nutmeg","1 tsp ground allspice","2 Tbsp canola oil","2 Tbsp blackstrap molasses","2 Tbsp pure honey","1 large egg, lightly beaten","1 1/3 cups buttermilk","1/3 cup raisins"],
+    instructions: ["Preheat oven to 375\u00B0F. Lightly coat 10 cups of a 12-muffin pan with canola oil spray.","In a medium bowl, combine all dry ingredients.","In a small bowl, combine oil, molasses, honey, egg, and buttermilk and mix well.","Add liquid ingredients to dry ingredients and stir just until moistened. Do not over mix.","Stir in raisins and fill prepared muffin pans \u00BE full.","Bake 15-20 minutes, or until a toothpick inserted in center comes out clean."],
+    notes: "High in fiber — 5g per muffin."
+  },
+  {
+    id: 65, name: "Carpaccio of Roasted Beets", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "6", calories: 35,
+    category: "Salad",
+    nutrition: {carbs: "5g", protein: "1g", fat: "1g", fiber: "1g", sodium: "141mg"},
+    ingredients: ["3 medium/large beets","pinch sea salt","1/3 cup water","1/4 cup diced carrots","1 Tbsp diced shallots","1 Tbsp Dijon mustard","1 Tbsp red wine vinegar","1 Tbsp fresh grated orange zest","2 tsp extra virgin olive oil","pinch sea salt (for dressing)","pinch freshly ground black pepper","1 Tbsp minced red onion","2 Tbsp minced carrots","2 Tbsp chopped fresh parsley","1 Tbsp chopped fresh chives","2 oranges, peeled and sectioned"],
+    instructions: ["Preheat oven to 450\u00B0F. Scrub beets and trim roots and tops. Wrap in foil and bake for 1 hour.","Cool, peel, and thinly slice beets. Divide evenly onto 6 plates. Sprinkle with salt.","Combine water, 1/4 cup diced carrots, shallots, Dijon mustard, red wine vinegar, orange zest, olive oil, salt, and pepper in a blender. Pur\u00E9e until very smooth. Drizzle 2 Tbsp dressing over each serving.","In a small bowl, combine red onion, 2 Tbsp minced carrots, parsley, and chives.","Sprinkle 1 Tbsp of the herb mixture on top of beets. Garnish each serving with 3 orange sections."],
+    notes: "Vegan and vegetarian. The carrot-Dijon dressing is the star of this dish."
+  },
+  {
+    id: 66, name: "Tortilla-Crusted Chicken with Tomatillo Sauce", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "4", calories: 275,
+    category: "Poultry",
+    nutrition: {carbs: "18g", protein: "29g", fat: "8g", fiber: "3g", sodium: "500mg"},
+    ingredients: ["2 large eggs, beaten","4 skinless chicken breast halves, boned and defatted","1 tsp extra virgin olive oil","12 oz tomatillos, paper removed","1/2 jalape\u00F1o pepper, minced","1/4 tsp dried oregano","2 tsp chopped fresh cilantro","1 tsp minced garlic","1/4 tsp sea salt","1 tsp fresh lime juice","4 corn tortillas, julienned","1 cup all-purpose flour","1 Tbsp dry oregano","2 tsp sea salt","1/4 tsp cayenne pepper","1 Tbsp toasted and ground cumin seed"],
+    instructions: ["Preheat oven to 400\u00B0F. Lightly coat a baking sheet with olive oil spray.","Arrange whole tomatillos on baking sheet and roast for 10 minutes until golden brown. Place in blender with jalape\u00F1o, oregano, cilantro, garlic, 1/4 tsp salt, and lime juice. Pur\u00E9e until smooth.","Spread tortilla strips on baking sheet and bake 15 minutes until golden and crisp. Cool, break into pieces, and pulse in a food processor to make fine crumbs.","In a shallow bowl, combine flour, oregano, 2 tsp salt, cayenne, and cumin.","Dip chicken in flour mixture, then in egg, then dredge in tortilla crumbs. Place on a lightly oiled baking pan. Spray lightly with olive oil.","Bake 15-20 minutes until crust is golden and chicken is cooked through. Serve with 1/4 cup tomatillo sauce."],
+    notes: "Wear gloves when handling hot peppers. Gluten-free friendly."
+  },
+  {
+    id: 67, name: "Tortilla-Crusted Sea Bass with Tomatillo Sauce", source: "Canyon Ranch",
+    time: "1 hr", difficulty: "Easy", servings: "4", calories: 250,
+    category: "Seafood",
+    nutrition: {carbs: "18g", protein: "29g", fat: "7g", fiber: "3g", sodium: "500mg"},
+    ingredients: ["4 corn tortillas, julienned","1 cup all-purpose flour","1 Tbsp dry oregano","2 tsp sea salt","1/4 tsp cayenne pepper","1 Tbsp toasted and ground cumin seed","2 large eggs, beaten","1 lb sea bass fillets, cut into 4 oz portions","1 tsp extra virgin olive oil","12 oz tomatillos, paper removed","1/2 jalape\u00F1o pepper, minced","1/4 tsp dried oregano","2 tsp chopped fresh cilantro","1 tsp minced fresh garlic","1/4 tsp sea salt","1 tsp fresh lime juice"],
+    instructions: ["Preheat oven to 400\u00B0F. Lightly coat a baking sheet with olive oil.","Arrange whole tomatillos on baking sheet and roast for 10 minutes until golden brown. Place in blender with jalape\u00F1o, oregano, cilantro, garlic, 1/4 tsp salt, and lime juice. Pur\u00E9e until smooth.","Spread tortilla strips on baking sheet and bake 15 minutes until golden and crisp. Cool and crush into small pieces.","In a shallow bowl, combine flour, oregano, 2 tsp salt, cayenne, and cumin.","Dip fish in flour mixture, then in egg, then dredge in tortilla crumbs. Place on a lightly oiled baking pan. Spray lightly with olive oil.","Bake 10 minutes until crust is golden and fish flakes easily. Serve with 1/4 cup tomatillo sauce."],
+    notes: "Same technique as the chicken version — works beautifully with sea bass. Gluten-free friendly."
+  },
+  {
+    id: 68, name: "White Bean Soup", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "5 (3/4 cup each)", calories: 150,
+    category: "Soup",
+    nutrition: {carbs: "23g", protein: "18g", fat: "3g", fiber: "6g", sodium: "311mg"},
+    ingredients: ["1/3 cup diced yellow onion","1/4 cup peeled and diced carrots","1/4 cup diced celery","1 tsp minced fresh garlic","1 Tbsp extra-virgin olive oil","1 cup small white beans, soaked overnight and rinsed","1 1/2 qt vegetable stock","dash liquid smoke","1/4 tsp dry basil","pinch dry oregano","pinch dry thyme","3/4 tsp sea salt","pinch freshly ground black pepper","1/2 tsp Worcestershire sauce","1 1/2 tsp chopped fresh parsley","1/2 tsp fresh lemon juice"],
+    instructions: ["In a large saut\u00E9 pan, saut\u00E9 onions, carrots, celery, and garlic in olive oil until onions begin to turn translucent.","Add beans and stir. Add stock, liquid smoke, basil, oregano, and thyme. Bring to a boil, reduce heat to low, and simmer 45 minutes to 1 hour until beans are soft and beginning to fall apart to thicken the broth.","Once soup begins to thicken, add salt, pepper, Worcestershire sauce, parsley, and lemon juice. Simmer briefly."],
+    notes: "Soak beans overnight before cooking. Vegetarian — the liquid smoke adds a subtle smoky depth."
+  },
+  {
+    id: 69, name: "Granola", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "12 (1/2 cup each)", calories: 200,
+    category: "Breakfast",
+    nutrition: {carbs: "32g", protein: "4g", fat: "6g", fiber: "3g", sodium: "736mg"},
+    ingredients: ["1 1/2 cup rolled oats","1/2 cup oat flour","1/4 cup cashews","1/2 cup almonds","pinch ground cinnamon","pinch sea salt","2 Tbsp apple juice concentrate","1 Tbsp pineapple or orange juice concentrate","1/4 cup lite coconut milk","1 Tbsp brown sugar","1 Tbsp pure vanilla extract","3/4 tsp cashew butter","1 Tbsp pure maple syrup","1/4 cup dried cranberries","3/4 cup dried cherries","2 Tbsp honey, heated"],
+    instructions: ["Preheat oven to 275\u00B0F. Lightly coat a baking sheet with canola oil spray.","In a medium bowl, combine oats, oat flour, nuts, cinnamon, and salt. Mix well.","In a small bowl, combine apple juice concentrate, pineapple juice concentrate, coconut milk, brown sugar, vanilla, cashew butter, and maple syrup. Mix well. Add to dry mixture and stir until moist.","Crumble mixture onto baking sheet and bake 45 minutes to 1 hour, stirring after 25 minutes for even cooking.","Remove from oven, break apart while still slightly warm, and toss with dried fruit and heated honey. Cool on baking sheet."],
+    notes: "Substitute almond butter or peanut butter for cashew butter. Make oat flour in a food processor from rolled oats."
+  },
+  {
+    id: 70, name: "Hoisin Sauce", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "16 (1 Tbsp each)", calories: 60,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "10g", protein: "1g", fat: "2g", fiber: "trace", sodium: "216mg"},
+    ingredients: ["2 Tbsp canola oil","1 Tbsp minced fresh garlic","pinch chili flakes","pinch five spice powder","1/3 cup brown sugar","1 tsp sea salt","2 Tbsp low-sodium tamari sauce","5 Tbsp white vinegar","3 Tbsp water","1/3 cup canned black beans"],
+    instructions: ["In a medium saut\u00E9 pan, combine oil, garlic, chili flakes, and five-spice powder. Saut\u00E9 over medium heat until garlic turns golden brown.","Add brown sugar and cook over low heat until sugar caramelizes.","Add remaining ingredients and cook until thick, about 20-30 minutes over low heat.","Cool. Transfer to blender and pur\u00E9e until smooth."],
+    notes: "Homemade hoisin — great for stir-fries, glazes, and dipping sauces."
+  },
+  {
+    id: 71, name: "Honey Lemon Tarragon Dressing", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "8 (2 Tbsp each)", calories: 60,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "12g", protein: "28g", fat: "trace", fiber: "trace", sodium: "91mg"},
+    ingredients: ["1/2 cup yogurt cheese","3 Tbsp fresh lemon juice","3 Tbsp honey","1/4 tsp minced garlic","1 1/2 Tbsp minced shallots","1/4 tsp sea salt","1 Tbsp dried tarragon"],
+    instructions: ["Combine all ingredients in a blender container.","Pur\u00E9e until smooth.","Store in refrigerator."],
+    notes: "To make yogurt cheese: Place nonfat yogurt in cheesecloth and invert over a bowl in the fridge overnight to drain. 1 quart yogurt = 1 1/2 cups yogurt cheese."
+  },
+  {
+    id: 72, name: "Lasagna with Meat Sauce", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "8", calories: 380,
+    category: "Beef",
+    nutrition: {carbs: "40g", protein: "33g", fat: "11g", fiber: "5g", sodium: "506mg"},
+    ingredients: ["3/4 lb lean ground beef","1 tsp extra-virgin olive oil","3/4 cup chopped yellow onions","1 Tbsp minced garlic","2 Tbsp chopped Italian parsley","2 tsp dried basil","1 tsp dried oregano","1 tsp ground fennel seed","2 cups fresh marinara sauce (for meat sauce)","2 cups fat-free ricotta cheese","2 egg yolks","1 tsp granulated garlic","1 tsp dried basil (for ricotta)","1/2 tsp dried oregano (for ricotta)","1/2 tsp sea salt","1/8 tsp freshly ground black pepper","3 cups fresh marinara sauce (for assembly)","1 package oven-ready lasagna noodles","3/4 cup grated parmesan cheese","3/4 cup shredded mozzarella cheese"],
+    instructions: ["Preheat oven to 350\u00B0F. Lightly coat a 9x13x2-inch baking pan with canola oil spray.","Brown beef in a large saucepan, then drain. Saut\u00E9 onions and garlic in olive oil until translucent. Add meat and spices, saut\u00E9 briefly. Add 2 cups marinara and cook until thickened, about 15-20 minutes.","In a medium bowl, combine ricotta, egg yolks, garlic granules, basil, oregano, salt, and pepper.","Assemble: Spread 1/2 cup marinara in pan. Layer 1.5 pasta sheets, half the ricotta, 1 cup meat sauce, 1/4 cup parmesan. Repeat layers: 1.5 pasta sheets, 1/2 cup marinara, 1 cup meat sauce, 1/4 cup mozzarella. Then 1.5 pasta sheets, remaining ricotta, 1 cup meat sauce, 1/4 cup parmesan. Then 1.5 pasta sheets, 1/2 cup marinara, 1 cup meat sauce, 1/4 cup mozzarella.","Top with remaining pasta sheet, 1/2 cup marinara, 1/4 cup mozzarella, and 1/4 cup parmesan.","Cover with foil and bake 45-50 minutes. Cool slightly and cut into 8 servings."],
+    notes: "Uses fat-free ricotta and lean ground beef to keep it lighter. Needs 5 cups total marinara sauce."
+  },
+  {
+    id: 73, name: "Lemon Pound Cake", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "20", calories: 175,
+    category: "Dessert",
+    nutrition: {carbs: "29g", protein: "3g", fat: "5g", fiber: "1g", sodium: "174mg"},
+    ingredients: ["1/2 cup unsalted butter","1/4 cup low-fat cream cheese","1 1/2 cups cane sugar","3 egg yolks","1 1/2 cups all-purpose flour","2 1/2 tsp baking powder","1/2 tsp baking soda","1/2 tsp sea salt","1 cup buttermilk","3/4 tsp lemon extract","2 Tbsp grated lemon peel","1/2 cup fresh lemon juice","1 Tbsp powdered sugar"],
+    instructions: ["Preheat oven to 350\u00B0F. Lightly coat a 9-inch bundt pan with canola oil spray and dust with flour.","Cream butter, cream cheese, and sugar with an electric mixer on low speed until sugar is dissolved. Add egg yolks and mix until combined.","In a medium bowl, sift together flour, baking powder, baking soda, and salt.","In another bowl, combine buttermilk, lemon extract, lemon peel, and lemon juice.","Add half the flour mixture to creamed mixture and mix on low 30 seconds. Add half the buttermilk mixture and mix until just combined. Repeat with remaining flour and buttermilk. Mix briefly until smooth.","Pour into pan and bake 45 minutes, or until a toothpick comes out clean.","Cool 15 minutes on a wire rack, invert onto a plate, cool completely. Dust with powdered sugar. Slice into 20 servings."],
+    notes: "Uses low-fat cream cheese and buttermilk for a lighter pound cake."
+  },
+  {
+    id: 74, name: "Lemonade", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "8 (1 cup each)", calories: 65,
+    category: "Beverage",
+    nutrition: {carbs: "18g", protein: "trace", fat: "trace", fiber: "0g", sodium: "trace"},
+    ingredients: ["1/2 cup cane sugar","3/4 cup fresh lemon juice","7 cups water"],
+    instructions: ["Combine sugar and lemon juice in a 2-quart pitcher or jar.","Add water and mix well.","Add ice and serve."],
+    notes: "Simple and refreshing — just three ingredients."
+  },
+  {
+    id: 75, name: "Manchego Chopped Salad with Shrimp", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "4", calories: 355,
+    category: "Salad",
+    nutrition: {carbs: "28g", protein: "28g", fat: "15g", fiber: "7g", sodium: "707mg"},
+    ingredients: ["1 cup canned garbanzo beans, drained","1 cup diced red or yellow bell pepper","1 cup diced celery","2 cups diced tomatoes","2 cups peeled and diced cucumber","1/4 cup chopped scallions","1/2 cup sliced green olives","1/2 cup diced artichoke hearts","3/4 lb cooked, diced shrimp","4 Tbsp shaved Manchego cheese","2 Tbsp minced garlic","1/2 cup champagne or white wine vinegar","1/4 cup Dijon mustard","3 Tbsp water","2 Tbsp low-sodium tamari sauce","1/4 tsp freshly ground black pepper","2 Tbsp canola oil","2 Tbsp extra virgin olive oil"],
+    instructions: ["Make the French vinaigrette: Put garlic in a strainer and submerge in boiling water for 5 seconds until garlic turns white. Place garlic, vinegar, mustard, water, tamari, and pepper in a blender and blend until smooth. Slowly drizzle in oils while blender is running.","In a large bowl, place all diced vegetables and shrimp. Add 1/2 cup dressing and toss until well combined.","Divide salad among 4 plates. Top each with 1 Tbsp shaved Manchego cheese."],
+    notes: "Includes a French vinaigrette recipe — makes extra dressing that's great on other salads too."
+  },
+  {
+    id: 76, name: "Mustard-Crusted Chicken", source: "Canyon Ranch",
+    time: "3 hrs", difficulty: "Medium", servings: "8", calories: 355,
+    category: "Poultry",
+    nutrition: {carbs: "32g", protein: "32g", fat: "10g", fiber: "4g", sodium: "341mg"},
+    ingredients: ["8 boneless, skinless chicken breasts","1 cup whole-wheat bread crumbs","3/4 cup nonfat plain yogurt","2 Tbsp whole-grain mustard","2 Tbsp Dijon mustard","2 Tbsp fresh lemon juice","1 1/4 cups chicken stock","1 Tbsp unsalted butter","2 tsp all-purpose flour","pinch sea salt","1 bay leaf","1/4 cup lowfat milk","2 tsp cornstarch"],
+    instructions: ["Combine yogurt, mustards, and lemon juice for marinade. Pour over chicken in a glass baking dish. Cover and refrigerate 2 hours or overnight.","Bring chicken stock to a simmer and reduce by half. Set aside to cool.","In a separate pot, melt butter and add flour to form a roux. Cook over low heat 5 minutes, stirring constantly.","Add cooled stock to hot roux, whisking constantly until mixture boils and thickens.","Add salt, bay leaf, and half the milk. Bring back to a simmer. Make a slurry with remaining milk and cornstarch, add to sauce and simmer until thick. Cook 15 minutes. Remove bay leaf.","Preheat oven to 375\u00B0F. Coat marinated chicken in bread crumbs, place in a baking dish. Bake 15-20 minutes until done.","Serve each breast topped with 2 Tbsp sauce."],
+    notes: "Marinate overnight for best results. The yogurt-mustard marinade keeps the chicken moist."
+  },
+  {
+    id: 77, name: "Ranch Hands BBQ Sauce", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "16 (2 Tbsp each)", calories: 35,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "10g", protein: "trace", fat: "trace", fiber: "trace", sodium: "117mg"},
+    ingredients: ["1/2 cup diced red onion","1 Tbsp minced garlic","1/2 cup brown sugar","1 cup ketchup","1/3 cup balsamic vinegar","1/4 cup low-sodium tamari","1 Tbsp Worcestershire sauce","1/4 tsp red pepper flakes","1/2 tsp dry mustard","1 tsp liquid smoke"],
+    instructions: ["Saut\u00E9 onions and garlic until translucent.","Add remaining ingredients and simmer for 10 minutes.","Cool and store in refrigerator."],
+    notes: "Great on chicken, beef, or pork. The balsamic vinegar adds a nice depth."
+  },
+  {
+    id: 78, name: "Roasted Red Pepper and Tomato Bisque", source: "Canyon Ranch",
+    time: "1 hr", difficulty: "Easy", servings: "8 (3/4 cup each)", calories: 85,
+    category: "Soup",
+    nutrition: {carbs: "12g", protein: "3g", fat: "3g", fiber: "2g", sodium: "300mg"},
+    ingredients: ["1 Tbsp extra-virgin olive oil","3 red bell peppers, seeded and quartered","1 large red onion, peeled and sliced","8 whole garlic cloves, peeled","3 cups canned diced tomatoes","1 1/2 tsp dry oregano","1 qt chicken stock","1 Tbsp chopped fresh basil","1 Tbsp cane sugar","1 1/4 tsp sea salt","1/4 tsp freshly ground black pepper","3 Tbsp heavy cream","8 tsp nonfat sour cream","1/2 cup whole-wheat croutons"],
+    instructions: ["Preheat oven to 400\u00B0F. Coat a baking sheet with olive oil spray. Place peppers skin-side up, fill spaces with onion and garlic. Roast 15-20 minutes until pepper skins brown. Run peppers under cold water and remove skins.","In a large saucepan, combine tomatoes, oregano, and chicken stock. Bring to a boil, reduce heat, simmer 1 minute. Add peppers, onions, and garlic.","Cook 10 minutes. Transfer to blender and pur\u00E9e until smooth. Return to saucepan, add basil, sugar, salt, and pepper. Cook briefly. Remove from heat and stir in heavy cream.","Serve 3/4 cup per bowl, garnished with 1 tsp sour cream and 1 Tbsp whole-wheat croutons."],
+    notes: ""
+  },
+  {
+    id: 79, name: "Saut\u00E9ed Shrimp with Roasted Red Pepper Vinaigrette", source: "Canyon Ranch",
+    time: "1 hr", difficulty: "Easy", servings: "4", calories: 295,
+    category: "Seafood",
+    nutrition: {carbs: "25g", protein: "28g", fat: "9g", fiber: "1g", sodium: "524mg"},
+    ingredients: ["1 lb shrimp, peeled and deveined","1 tsp canola oil","1/2 tsp sea salt","1/4 tsp freshly ground black pepper","2/3 cup roasted red peppers","1 Tbsp minced shallots","1 tsp minced garlic","2 tsp minced fresh basil","1 tsp chopped fresh rosemary","1 tsp cane sugar","2 Tbsp sherry vinegar","1/4 cup hazelnut oil","1/4 cup diced yellow onions","1 tsp minced garlic (for risotto)","1 tsp extra virgin olive oil","1/2 cup dry orzo pasta","1 cup low-sodium chicken stock","1/2 tsp saffron threads","1/2 tsp paprika","1/4 cup chopped fresh Italian parsley"],
+    instructions: ["Make vinaigrette: Place roasted red peppers, shallots, garlic, basil, rosemary, sugar, and sherry vinegar in a blender. Pur\u00E9e until smooth. With machine running, slowly drizzle in hazelnut oil.","Make saffron orzo risotto: Saut\u00E9 onion and garlic in olive oil until translucent. Add orzo and stir to coat. Add chicken stock, bring to a boil. Reduce to a simmer, stir constantly until liquid is absorbed and orzo is tender, 10-15 minutes. Stir in saffron, paprika, parsley, and salt.","In a large saut\u00E9 pan, heat canola oil over medium heat. Add shrimp and saut\u00E9 until just pink. Season with salt and pepper.","Plate: 2 Tbsp vinaigrette on the bottom, top with 1/3 cup orzo risotto and shrimp."],
+    notes: "A composed plate — includes saffron orzo risotto and roasted red pepper vinaigrette."
+  },
+  {
+    id: 80, name: "Shrimp Catalan", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Medium", servings: "4 (1 cup each)", calories: 190,
+    category: "Seafood",
+    nutrition: {carbs: "14g", protein: "14g", fat: "6g", fiber: "2g", sodium: "298mg"},
+    ingredients: ["2 red bell peppers, roasted, seeded, and diced","1 Tbsp olive oil","1 1/4 cup diced red onion","2 tsp minced garlic","1/4 cup white wine","2 cups canned chopped tomatoes","1 tsp saffron threads","1/4 cup chopped parsley","pinch cayenne pepper","pinch salt","1 lb peeled and deveined shrimp, tails removed"],
+    instructions: ["In a large saut\u00E9 pan, saut\u00E9 shrimp in 2 tsp olive oil until pink. Remove and set aside.","Saut\u00E9 onions and garlic in remaining olive oil until translucent.","Add wine and increase heat to medium-high. Cook until wine evaporates. Add red peppers and saut\u00E9 briefly. Remove from heat, cool, and pur\u00E9e in a blender until smooth.","Strain tomatoes and reserve liquid. Combine tomato liquid and saffron in a saut\u00E9 pan, bring to a simmer. Add tomatoes and pepper pur\u00E9e. Add parsley, cayenne, and salt.","Serve 1 cup over pasta, rice, or grains."],
+    notes: "A saffron-infused Spanish-style shrimp dish. Gluten-free."
+  },
+  {
+    id: 81, name: "Pico de Gallo", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "3 (2 Tbsp each)", calories: 10,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "2g", protein: "trace", fat: "trace", fiber: "trace", sodium: "122mg"},
+    ingredients: ["4 medium tomatoes, diced","1 1/2 cups canned diced tomatoes","1/2 cup diced red onions","3 Tbsp chopped scallions","1/2 cup diced yellow bell pepper","1 Tbsp diced jalape\u00F1o pepper","1/4 cup chopped cilantro","1 Tbsp fresh lime juice","1 tsp sea salt","1/4 tsp freshly ground black pepper","1/2 tsp dried oregano leaves","1/4 tsp garlic powder"],
+    instructions: ["Place all ingredients in a food processor and mix briefly."],
+    notes: "Vegan. Great as a topping for tacos, grilled fish, or with chips."
+  },
+  {
+    id: 82, name: "Poblano Roulade", source: "Canyon Ranch",
+    time: "1 hr", difficulty: "Easy", servings: "4 (2 each)", calories: 115,
+    category: "Seafood",
+    nutrition: {carbs: "10g", protein: "11g", fat: "4g", fiber: "4g", sodium: "240mg"},
+    ingredients: ["8 fresh poblano peppers","1/4 cup goat cheese","1/2 cup shrimp, cooked and diced","2 tsp chopped fresh cilantro","1/4 tsp sea salt","2 tsp chopped pumpkin seeds"],
+    instructions: ["Preheat broiler. Arrange peppers on baking sheet and broil until charred on all sides, turning occasionally, about 20 minutes.","Place in a stainless steel bowl and cover tightly with plastic wrap. Let stand 10 minutes. Peel chilies and discard skin.","Pull each pepper apart, keeping it in as large a section as possible. Lay between plastic wrap and pound lightly to flatten.","Place 1 1/2 tsp goat cheese, 1 Tbsp diced shrimp, and 1/4 tsp cilantro on each pepper. Sprinkle with salt. Roll up and top each with 1/4 tsp pumpkin seeds.","Bake 8-10 minutes until heated through and seeds are browned."],
+    notes: "An elegant appetizer — roasted poblanos stuffed with shrimp and goat cheese."
+  },
+  {
+    id: 83, name: "Potato Latkes", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "8 (3 each)", calories: 130,
+    category: "Side Dish",
+    nutrition: {carbs: "22g", protein: "4g", fat: "3g", fiber: "2g", sodium: "302mg"},
+    ingredients: ["4 large russet potatoes, peeled and grated","1 cup diced onion","2 large eggs, beaten","3/4 tsp sea salt","1/4 tsp freshly ground black pepper","2 tsp extra virgin olive oil","3 Tbsp all-purpose flour"],
+    instructions: ["In a medium bowl, combine potatoes and onions. Add eggs, salt, pepper, and olive oil. Sift in flour and mix well.","Lightly coat a large saut\u00E9 pan with canola oil spray. Portion a scant 1/4 cup potato mixture for each latke, flatten, and cook 3 at a time.","Cook until golden brown, about 3 minutes. Flip and finish browning on the other side.","Serve 3 latkes with nonfat yogurt, nonfat sour cream, or applesauce."],
+    notes: "Dairy-free. Perfect for Hanukkah or any time."
+  },
+  {
+    id: 84, name: "Ranch Dressing", source: "Canyon Ranch",
+    time: "20 min", difficulty: "Easy", servings: "20 (1 oz each)", calories: 58,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "2g", protein: "1g", fat: "4g", fiber: "trace", sodium: "77mg"},
+    ingredients: ["1.5 oz garlic","2 Tbsp tamari","1/2 Tbsp Worcestershire sauce","1/2 Tbsp white distilled vinegar","1 Tbsp evaporated cane sugar","1/2 tsp black pepper","1/2 tsp salt","1.5 oz scallions","1.75 lb sour cream","6 oz mayonnaise"],
+    instructions: ["Bring a pot of water to a boil and add garlic. Reduce to a simmer and cook about 5 minutes. Drain and cool.","In a blender, blend garlic, tamari, Worcestershire, vinegar, sugar, pepper, and salt until smooth.","Thinly slice the green parts of the scallions and add to blender. Pulse only 2-3 times to keep them chunky.","Place sour cream and mayonnaise in a mixing bowl. Pour in blender contents and whisk by hand until incorporated."],
+    notes: "Blanching the garlic mellows its bite — skip this step if you prefer a stronger garlic kick. Homemade mayo recommended."
+  },
+  {
+    id: 85, name: "Raspberry Lime Smoothie", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "3", calories: 185,
+    category: "Beverage",
+    nutrition: {carbs: "22g", protein: "3g", fat: "5g", fiber: "8g", sodium: "29mg"},
+    ingredients: ["2 cups frozen raspberries","1 medium banana","1 can (13.5 oz) lite coconut milk","1/4 cup loosely packed destemmed kale","1 Tbsp fresh squeezed lime juice"],
+    instructions: ["Combine all ingredients in a blender and blend until smooth."],
+    notes: "High in fiber (8g per serving) with hidden kale for extra nutrition."
+  },
+  {
+    id: 86, name: "Red Wine Vinaigrette", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "16 (2 Tbsp each)", calories: 50,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "21g", protein: "trace", fat: "5g", fiber: "trace", sodium: "102mg"},
+    ingredients: ["1 cup red wine vinegar","1/2 cup vegetable stock","1 Tbsp canned anchovies","1/3 cup extra virgin olive oil","1/4 tsp sea salt","1/4 tsp freshly ground black pepper"],
+    instructions: ["Combine all ingredients in a blender container and pur\u00E9e until smooth."],
+    notes: "The anchovies add umami depth without a fishy taste."
+  },
+  {
+    id: 87, name: "Salmon Teriyaki", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "4", calories: 190,
+    category: "Seafood",
+    nutrition: {carbs: "4g", protein: "23g", fat: "8g", fiber: "trace", sodium: "332mg"},
+    ingredients: ["1 lb salmon fillets, cut into 4 equal portions","1/2 cup low-sodium wheat-free tamari soy sauce","2 Tbsp rice vinegar","3 tsp chopped fresh garlic","3 tsp fresh ginger, minced","1 1/2 cups thawed apple juice concentrate","1/2 cup finely chopped green onions"],
+    instructions: ["Combine all ingredients except onions and salmon in a blender and process. Stir in onions.","Place salmon in a glass baking dish and pour marinade over it. Marinate 10 minutes to 1 hour, turning occasionally.","Preheat grill or broiler. Grill or broil 3-5 minutes on each side, or until fish flakes easily."],
+    notes: "Uses apple juice concentrate for natural sweetness instead of sugar. Wheat-free tamari keeps it gluten-free."
+  },
+  {
+    id: 88, name: "Scalloped Potatoes", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "6", calories: 90,
+    category: "Side Dish",
+    nutrition: {carbs: "15g", protein: "3g", fat: "3g", fiber: "2g", sodium: "241mg"},
+    ingredients: ["3 medium russet potatoes, thinly sliced (about 3 cups)","3/4 cup thinly sliced onions","1 cup 2% milk","1 Tbsp all-purpose flour","1/2 tsp salt","1/4 tsp freshly ground black pepper","1 1/2 tsp melted butter"],
+    instructions: ["Preheat oven to 425\u00B0F. Lightly coat a 9-inch square baking dish with canola oil.","Place half of the potatoes in the dish and cover with onions. Top with remaining sliced potatoes.","In a blender, combine milk, flour, salt, pepper, and butter. Blend until well mixed. Evenly pour over the potatoes.","Cover and bake for 45 minutes. Remove cover and bake an additional 15 minutes, or until potatoes reach desired crispness on top."],
+    notes: "A lightened-up comfort food classic — only 90 calories per serving."
+  },
+  {
+    id: 89, name: "Seven Grain Bread", source: "Canyon Ranch",
+    time: "2.5 hrs", difficulty: "Medium", servings: "32 (1 slice each)", calories: 105,
+    category: "Bread/Baking",
+    nutrition: {carbs: "12g", protein: "6g", fat: "4g", fiber: "2g", sodium: "149mg"},
+    ingredients: ["1/2 cup pecans, chopped","3 Tbsp sunflower seeds","2 cups warm water (90-105\u00B0F)","1 1/4 cups whole-wheat flour","1 Tbsp active dry yeast","1 1/2 Tbsp honey","1/4 cup ground flax seeds","2 cups bread flour","2 tsp salt","1/2 cup Arrowhead Mills Seven-Grain Cereal"],
+    instructions: ["Preheat oven to 350\u00B0F. Lightly coat two medium bread pans with canola oil spray.","Spread pecans and sunflower seeds on a sheet tray and toast until golden brown, about 5 minutes. Set aside.","In a large bowl, combine water, whole-wheat flour, yeast, honey, and flax seed. Let sit in a warm area until doubled in size, about 1 hour.","Add remaining ingredients to yeast mixture and mix well. Knead 3 minutes with a dough hook (or 5 minutes by hand). Dough will be elastic but not smooth.","Place in a lightly oiled bowl, cover, and let proof in a warm area for 1 hour. When doubled, punch down and portion into 2 loaves. Place in loaf pans and proof again until doubled.","Bake 30-40 minutes, or until golden brown."],
+    notes: "Can also be used for 3 oz sandwich rolls — bake on a sheet pan for 15-20 minutes."
+  },
+  {
+    id: 90, name: "Spicy Grilled Shrimp", source: "Canyon Ranch",
+    time: "2.5 hrs", difficulty: "Easy", servings: "4", calories: 210,
+    category: "Seafood",
+    nutrition: {carbs: "13g", protein: "18g", fat: "9g", fiber: "trace", sodium: "479mg"},
+    ingredients: ["2 Tbsp extra virgin olive oil","2 tsp minced fresh garlic","1/2 tsp freshly ground black pepper","1/2 cup low-sodium ketchup","1/2 cup balsamic vinegar","2 Tbsp Worcestershire sauce","pinch red chili flakes","1/2 cup chopped fresh parsley","1 lb shrimp, peeled and deveined","4 8-inch wooden skewers"],
+    instructions: ["In a shallow glass baking pan, combine all ingredients except shrimp. Add shrimp and stir to coat. Marinate uncovered in refrigerator for at least 2 hours.","Pour marinade from shrimp into a small saucepan. Bring to a boil for 1 minute and set aside.","Prepare hot coals for grilling or preheat broiler. Soak skewers in water for 10 minutes.","Thread 3 shrimp onto each skewer. Lightly spray grill with olive oil and baste shrimp with boiled marinade. Grill until pink, about 2 minutes on each side. Do not overcook."],
+    notes: "Gluten-free. The balsamic-ketchup marinade doubles as a basting sauce."
+  },
+  {
+    id: 91, name: "Strawberry Daiquiri", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "2", calories: 110,
+    category: "Beverage",
+    nutrition: {carbs: "26g", protein: "1g", fat: "trace", fiber: "2g", sodium: "9mg"},
+    ingredients: ["1 cup frozen strawberries","1 cup fresh orange juice","3 Tbsp apple juice concentrate","1 tsp fresh lemon juice"],
+    instructions: ["Combine all ingredients in a blender and pur\u00E9e until smooth."],
+    notes: "A non-alcoholic frozen daiquiri — dairy-free and refreshing."
+  },
+  {
+    id: 92, name: "Oatmeal Cookie", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "38", calories: 75,
+    category: "Dessert",
+    nutrition: {carbs: "13g", protein: "1g", fat: "2g", fiber: "1g", sodium: "49mg"},
+    ingredients: ["1/4 cup unsalted butter","1/3 cup low-fat cream cheese","1 cup brown sugar","1 large egg yolk","3/4 tsp pure vanilla extract","3/4 cup all-purpose flour","1 1/2 cups rolled oats","3/4 tsp aluminum-free baking powder","3/4 tsp ground cinnamon","1/2 tsp sea salt","1/2 cup raisins"],
+    instructions: ["Preheat oven to 350\u00B0F. Lightly coat a baking sheet with canola oil spray.","In a large bowl, cream butter, cream cheese, and sugar. Add egg yolk and vanilla extract, mix briefly.","Combine remaining dry ingredients and raisins in a large bowl. Add to creamed mixture and mix until a dough forms.","Portion heaping teaspoonfuls (about 3/4 oz) onto baking sheet 1 1/2 inches apart. Bake 7 minutes. Lightly flatten with finger. Rotate baking sheet and bake 4 more minutes."],
+    notes: "Makes a big batch — 38 cookies at only 75 calories each."
+  },
+  {
+    id: 93, name: "Orange Vegetable Stir-Fry", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 300,
+    category: "Vegetable",
+    nutrition: {carbs: "53g", protein: "11g", fat: "6g", fiber: "5g", sodium: "722mg"},
+    ingredients: ["1 Tbsp canola oil","4 oz edamame kernels","1 cup chopped red bell peppers","1 1/2 cups diced pineapple","1 1/2 cups snap peas","pinch sea salt","pinch freshly ground black pepper","2 cups cooked lo mein noodles","1/2 cup fresh orange juice","1/4 cup low-sodium soy sauce","2 Tbsp chopped scallion","2 Tbsp brown sugar, firmly packed","1 Tbsp minced yellow onion","1 Tbsp rice vinegar","2 tsp orange zest","1 tsp minced garlic","1 tsp minced fresh ginger","1/4 tsp red chili flakes","1 Tbsp cornstarch"],
+    instructions: ["In a medium bowl, combine all sauce ingredients, adding cornstarch last. Stir to dissolve cornstarch and set aside.","Heat wok or saut\u00E9 pan with canola oil. Add edamame, bell peppers, pineapple, and snap peas. Season with salt and pepper. Stir-fry until vegetables are tender, 3-5 minutes.","Add sauce to the stir-fry and cook until thickened, about 1 minute.","Serve 1 cup stir-fry with 1/2 cup cooked lo mein noodles."],
+    notes: "Vegetarian. The orange-ginger sauce ties everything together."
+  },
+  {
+    id: 94, name: "Pur\u00E9e of White Bean and Celery Root Soup", source: "Canyon Ranch",
+    time: "1 hr", difficulty: "Easy", servings: "6 (3/4 cup each)", calories: 175,
+    category: "Soup",
+    nutrition: {carbs: "24g", protein: "9g", fat: "5g", fiber: "6g", sodium: "326mg"},
+    ingredients: ["1 cup dry white cannellini beans, soaked overnight","10 oz celery root (approx 2 cups chopped)","1/4 cup extra-virgin olive oil","1 1/2 qt water","1 tsp sea salt","1/2 tsp freshly ground black pepper"],
+    instructions: ["Peel and chop celery root. In a large sauce pot, saut\u00E9 celery root in olive oil for 5-7 minutes until it starts to brown and caramelize.","Add beans and water. Cook uncovered for 45 minutes, or until beans are soft.","Pour into a blender and pur\u00E9e until smooth. Stir in salt and pepper."],
+    notes: "Vegan. Soak beans overnight. The caramelized celery root adds a sweet, earthy depth."
+  },
+  {
+    id: 95, name: "Raspberry Chocolate Angel Food Cake", source: "Canyon Ranch",
+    time: "2 hrs", difficulty: "Medium", servings: "20", calories: 145,
+    category: "Dessert",
+    nutrition: {carbs: "25g", protein: "3g", fat: "4g", fiber: "3g", sodium: "58mg"},
+    ingredients: ["1/3 cup cocoa powder","3/4 cup all-purpose flour","1/3 cup cane sugar (for dry mix)","1/4 tsp sea salt","1 1/2 cups egg whites","1 tsp cream of tartar","1 cup cane sugar","1/2 tsp pure almond extract","1/2 tsp pure vanilla extract","4 cups frozen raspberries, thawed slightly","4 Tbsp cane sugar (for raspberries)","1 1/2 cups heavy whipping cream","1 Tbsp cane sugar (for cream)","1/2 vanilla bean, seeds scraped from pod"],
+    instructions: ["Preheat oven to 325\u00B0F. Lightly spray a tube or 9-inch bundt pan with canola oil spray.","Whisk together cocoa powder, flour, 1/3 cup sugar, and salt in a small bowl.","Beat egg whites with cream of tartar on medium-low until frothy. Slowly add 1 cup sugar, almond extract, and vanilla extract. Increase speed to high until firm peaks form.","Sift flour/cocoa mixture over egg whites and fold together by hand.","Pour into pan and bake 40-50 minutes until slightly resistant to touch or a toothpick comes out clean. Cool, loosen sides with a knife, and cut into 20 slices.","Combine raspberries and 4 Tbsp sugar, set aside 15-20 minutes.","Whip cream with 1 Tbsp sugar and vanilla bean seeds until stiff peaks form.","Serve each slice with 1 Tbsp raspberries and 1 Tbsp whipped cream."],
+    notes: "A show-stopping dessert at only 145 calories per slice."
+  },
+  {
+    id: 96, name: "Red Lentil Soup", source: "Canyon Ranch",
+    time: "1.5 hrs", difficulty: "Easy", servings: "6 (3/4 cup each)", calories: 130,
+    category: "Soup",
+    nutrition: {carbs: "19g", protein: "7g", fat: "3g", fiber: "4g", sodium: "317mg"},
+    ingredients: ["1 Tbsp extra-virgin olive oil","1/2 cup chopped onions","1/4 cup chopped carrots","1/4 cup chopped celery","1 Tbsp minced garlic","1 cup red lentils","1 1/2 qt vegetable stock","1/4 tsp dried basil","pinch dried oregano","pinch dried thyme","1 1/2 tsp white distilled vinegar","1/2 tsp Worcestershire sauce","1 tsp sea salt","1/4 tsp freshly ground black pepper"],
+    instructions: ["Heat olive oil in a large saucepan over medium heat. Saut\u00E9 onions, carrots, celery, and garlic until onions are translucent.","Add vegetable stock, lentils, and herbs. Bring to a boil, reduce heat, and simmer for 1 hour until lentils are soft.","Remove from heat, cool slightly, and pur\u00E9e in a blender until smooth. Add vinegar, Worcestershire, salt, and pepper. Mix well."],
+    notes: "No soaking needed — red lentils cook down and thicken naturally."
+  },
+  {
+    id: 97, name: "Shrimp Pad Thai", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 375,
+    category: "Seafood",
+    nutrition: {carbs: "49g", protein: "27g", fat: "8g", fiber: "3g", sodium: "520mg"},
+    ingredients: ["12 oz rice noodles","1 lb shrimp","1 1/2 tsp hot sesame oil","2 Tbsp minced garlic","2 Tbsp ginger juice","1 cup julienned carrots","2 cups thinly sliced zucchini","2 Tbsp low-sodium soy sauce","2 Tbsp natural peanut butter","1/2 cup water","1 1/2 tsp cider vinegar","1 1/2 tsp brown sugar","pinch chili flakes","2 Tbsp lite coconut milk"],
+    instructions: ["Combine soy sauce, peanut butter, water, cider vinegar, brown sugar, chili flakes, and coconut milk in a blender. Blend well for the sauce.","Cook rice noodles until just tender. Drain and set aside.","Heat wok and sear shrimp on all sides with sesame oil. Remove and set aside.","Add garlic, ginger juice, carrots, and zucchini to the wok. Saut\u00E9 until cooked halfway.","Add noodles, shrimp, and sauce. Stir-fry until hot. Divide into 4 portions."],
+    notes: "The peanut-coconut sauce comes together in the blender in seconds."
+  },
+  {
+    id: 98, name: "Shrimp with Garlic Sauce", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 170,
+    category: "Seafood",
+    nutrition: {carbs: "5g", protein: "20g", fat: "6g", fiber: "trace", sodium: "504mg"},
+    ingredients: ["1 lb shrimp, cleaned and deveined","2 tsp extra virgin olive oil","4 Tbsp thinly sliced duck prosciutto (optional)","1 1/2 Tbsp minced garlic","1 Tbsp diced shallots","1/2 cup white wine","1 cup chicken stock","1 1/2 tsp cornstarch","1 1/2 tsp water","1/2 cup peeled, seeded, and diced tomatoes","2 Tbsp nonfat sour cream","2 Tbsp heavy cream","2 Tbsp chopped parsley","1 tsp fresh lemon juice","1/2 tsp sea salt","pinch freshly ground black pepper"],
+    instructions: ["In a large saut\u00E9 pan, heat olive oil over medium heat. Add shrimp and saut\u00E9 until pink. Do not overcook. Set aside.","In a medium saucepan, combine garlic, shallots, and wine. Simmer until wine is evaporated. Add chicken stock and simmer until reduced by half, about 5 minutes.","Combine cornstarch and water to make a paste. Add to sauce and simmer until thickened, 2-3 minutes.","Remove from heat and add tomatoes, sour cream, heavy cream, parsley, lemon juice, salt, and pepper.","Serve 1 1/2 Tbsp sauce over shrimp. Garnish with duck prosciutto if desired."],
+    notes: "Pairs well with soft corn polenta. The garlic-wine sauce is elegant and light."
+  },
+  {
+    id: 99, name: "Sparkling Fruit Sodas", source: "Canyon Ranch",
+    time: "20 min", difficulty: "Easy", servings: "8 (9 oz each)", calories: 80,
+    category: "Beverage",
+    nutrition: {carbs: "21g", protein: "trace", fat: "trace", fiber: "1g", sodium: "38mg"},
+    ingredients: ["1/3 cup cane sugar (for simple syrup)","1/3 cup water (for simple syrup)","1 1/4 cups fresh fruit (mangoes, berries, or papayas)","1/4 cup cane sugar (for pur\u00E9e)","2 Tbsp fresh lime juice","3 Tbsp fresh lemon juice","6 Tbsp water (for sweet and sour mix)","3 Tbsp simple syrup (for sweet and sour mix)","2 Tbsp fresh orange juice","6 cups club soda"],
+    instructions: ["Make simple syrup: Mix sugar and water in a small saucepan. Heat until sugar dissolves. Set aside.","Place fruit and 1/4 cup sugar in a blender and pur\u00E9e until smooth.","Combine lime juice, lemon juice, 6 Tbsp water, 3 Tbsp simple syrup, and orange juice for the sweet and sour mix.","In each glass: place 3 Tbsp fruit pur\u00E9e, 2 Tbsp sweet and sour mix, 1 Tbsp simple syrup, and 3/4 cup club soda. Stir, add ice, and serve."],
+    notes: "Use any seasonal fruit — mangoes, berries, or papayas all work great."
+  },
+  {
+    id: 100, name: "Spring Pea Soup", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Easy", servings: "8 (3/4 cup each)", calories: 80,
+    category: "Soup",
+    nutrition: {carbs: "13g", protein: "4g", fat: "2g", fiber: "4g", sodium: "161mg"},
+    ingredients: ["3/4 cup diced onions","3/4 cup diced leeks","1/2 cup chopped scallions","2 Tbsp extra-virgin olive oil","1 tsp minced garlic","2 1/2 cups fresh English peas or frozen peas, thawed","5 cups vegetable stock","1/2 cup chopped chives","1 tsp mint","1/2 tsp sea salt","1/4 tsp freshly ground black pepper"],
+    instructions: ["In a large saucepan, saut\u00E9 onions, leeks, and scallions in olive oil until translucent. Add garlic and peas, saut\u00E9 2 minutes.","Add vegetable stock, bring to a boil. Reduce heat and simmer 30 minutes.","Add chives and mint, cook 5 minutes. Remove from heat, pur\u00E9e in a blender until smooth. Add salt and pepper."],
+    notes: "Vegetarian. Fresh mint and chives make this bright and springy."
+  },
+  {
+    id: 101, name: "Strawberry Shortcake", source: "Canyon Ranch",
+    time: "45 min", difficulty: "Medium", servings: "12", calories: 155,
+    category: "Dessert",
+    nutrition: {carbs: "19g", protein: "4g", fat: "7g", fiber: "1g", sodium: "266mg"},
+    ingredients: ["3 cups organic strawberries, sliced","3 Tbsp cane sugar","1 1/2 tsp orange peel","2 tsp fresh orange juice","6 Tbsp heavy cream","1 1/4 cups all-purpose flour","3/4 cup whole-wheat flour","1 1/4 tsp sea salt","4 tsp aluminum-free baking powder","3 Tbsp unsalted butter, cubed","1/3 cup low-fat cream cheese","3/4 cup buttermilk"],
+    instructions: ["Preheat oven to 400\u00B0F. Lightly coat baking sheet with canola oil spray.","Sift together flours, salt, and baking powder. Cut butter and cream cheese into dry ingredients with a pastry cutter. Add buttermilk and mix with a fork until just combined.","Knead gently on a floured surface until dough forms. Roll to 3/4-inch thick. Cut 12 biscuits with a 2 1/2-inch round cutter. Arrange 1 inch apart on baking sheet.","Spray tops lightly with canola oil and bake 10 minutes until golden. Cool.","Combine strawberries, sugar, orange peel, and orange juice. Refrigerate.","Whip cream until stiff peaks form. Chill.","Cut biscuits in half. Place 1/4 cup strawberry mixture on bottom half, cover with top, and garnish with 1 heaping tsp whipped cream."],
+    notes: "Uses whole-wheat flour and low-fat cream cheese in the biscuits for a lighter take."
+  },
+  {
+    id: 102, name: "Tangy Lime Soy Sauce", source: "Canyon Ranch",
+    time: "15 min", difficulty: "Easy", servings: "12 (2 Tbsp each)", calories: 15,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "4g", protein: "trace", fat: "0g", fiber: "trace", sodium: "325mg"},
+    ingredients: ["1/2 cup fresh lime juice","1/2 cup low-sodium tamari sauce","1/2 cup water","4 Tbsp rice vinegar","1 Tbsp minced ginger","2 Tbsp cane sugar"],
+    instructions: ["Combine all ingredients and mix well."],
+    notes: "No-cook sauce — great for grilled fish, shrimp, or stir-fries."
+  },
+  {
+    id: 103, name: "Thai Peanut Sauce", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "8 (2 Tbsp each)", calories: 95,
+    category: "Sauce/Dressing",
+    nutrition: {carbs: "5g", protein: "4g", fat: "7g", fiber: "1g", sodium: "178mg"},
+    ingredients: ["1/2 cup natural peanut butter","pinch sea salt","1 Tbsp cane sugar","1 Tbsp lite coconut milk","1 Tbsp fresh lime juice","1 1/4 tsp fresh ginger juice","1/2 tsp rice vinegar","1/2 tsp fish sauce","dash Tabasco sauce","1/2 cup water","1 Tbsp low-sodium tamari sauce"],
+    instructions: ["Place peanut butter in a small bowl. Add salt and sugar, mix until almost dissolved. Add coconut milk, lime juice, ginger juice, rice vinegar, fish sauce, and Tabasco. Mix well to form a thick paste.","In a small saucepan, combine water and tamari and bring to a boil. Whisk in peanut butter mixture. Cook until thickened. Remove from heat.","Serve 2 Tbsp with pasta or as a dipping sauce for chicken kebabs."],
+    notes: "A stand mixer works great for blending the paste. Versatile dipping and noodle sauce."
+  },
+  {
+    id: 104, name: "Warm Chocolate Cake with Coffee Cr\u00E8me Anglaise", source: "Canyon Ranch",
+    time: "2 hrs", difficulty: "Medium", servings: "8", calories: 150,
+    category: "Dessert",
+    nutrition: {carbs: "19g", protein: "4g", fat: "6g", fiber: "0g", sodium: "34mg"},
+    ingredients: ["2 large eggs, separated","1/4 cup cane sugar","1/2 cup chopped bittersweet chocolate","1/3 cup nonfat plain yogurt","1 cup 2% milk","1/4 cup cane sugar (for cr\u00E8me anglaise)","1/2 vanilla bean","1/4 cup brewed coffee","3 large egg yolks"],
+    instructions: ["Lightly coat eight 4-oz ramekins with canola oil spray and dust with confectioners' sugar.","Combine egg yolks with 1 Tbsp sugar. Beat until very pale and thick.","Beat egg whites on high until foamy. Add remaining sugar 1 tsp at a time, beating until stiff peaks form.","Melt chocolate in a double boiler. Remove from heat, stir in yogurt. Temper yolks by adding a small amount of chocolate, then combine. Fold in egg whites. Spoon 1/4 cup into each mold. Refrigerate at least 30 minutes.","For cr\u00E8me anglaise: Combine milk, 1/4 cup sugar, vanilla bean, and coffee in a saucepan. Bring to a simmer. Remove vanilla bean, scrape seeds into mixture. Temper 3 egg yolks with hot milk, add back to pan. Cook 1 minute. Cool, then refrigerate at least 1 hour.","Preheat oven to 325\u00B0F. Bake cakes 12-15 minutes until they spring back when touched. Cool 2-3 minutes.","Invert onto plates and serve with 2 Tbsp cr\u00E8me anglaise."],
+    notes: "An elegant, individual chocolate cake — only 150 calories. The coffee cr\u00E8me anglaise is the perfect pairing."
+  },
+  {
+    id: 105, name: "Watermelon Feta Salad", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4 (1 cup each)", calories: 80,
+    category: "Salad",
+    nutrition: {carbs: "14g", protein: "2g", fat: "2g", fiber: "trace", sodium: "139mg"},
+    ingredients: ["3 Tbsp white balsamic vinegar","pinch sea salt","2 cups seeded and cubed watermelon","2 cups seeded and cubed golden watermelon","1/2 cup feta cheese","1 Tbsp chiffonade fresh basil"],
+    instructions: ["In a small bowl, combine vinegar and salt. Stir until salt dissolves.","In a large bowl, toss watermelon and feta cheese with vinegar mixture.","Top with fresh basil."],
+    notes: "Gluten-free and vegetarian. Uses both red and golden watermelon for a beautiful presentation."
+  },
+  {
+    id: 106, name: "Sesame-Crusted Salmon with Sesame Orange Sauce", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 205,
+    category: "Seafood",
+    nutrition: {carbs: "trace", protein: "28g", fat: "10g", fiber: "trace", sodium: "205mg"},
+    ingredients: ["4 salmon fillets (4 oz each)","1 Tbsp sesame seeds","1 Tbsp black sesame seeds","1/4 tsp sea salt","1 Tbsp sesame oil","3 Tbsp sweet chili dipping sauce","3 Tbsp fresh orange juice","2 Tbsp Worcestershire sauce","2 Tbsp rice vinegar","2 Tbsp toasted sesame oil"],
+    instructions: ["Preheat oven to 400\u00B0F.","In a shallow bowl, combine sesame seeds and salt. Sprinkle over salmon.","In a large saut\u00E9 pan, heat sesame oil over medium heat. Saut\u00E9 salmon 1 minute on each side, then place in oven for 5-10 minutes.","For sauce: Combine sweet chili sauce, orange juice, Worcestershire, rice vinegar, and toasted sesame oil.","Serve sauce atop salmon."],
+    notes: "The sesame orange sauce is a no-cook blend — comes together in seconds."
+  },
+  {
+    id: 107, name: "Roasted Fennel", source: "Canyon Ranch",
+    time: "40 min", difficulty: "Easy", servings: "4", calories: 20,
+    category: "Vegetable",
+    nutrition: {carbs: "4g", protein: "1g", fat: "trace", fiber: "2g", sodium: "146mg"},
+    ingredients: ["1 fresh fennel bulb, tops removed","1/4 tsp sea salt","1/4 tsp freshly ground black pepper"],
+    instructions: ["Preheat oven to 400\u00B0F.","Cut fennel bulb into quarters. Season with salt and pepper.","Place on baking pan and roast about 20 minutes until fennel begins to brown.","Add 1/2 cup water to pan and cover with aluminum foil. Return to oven and roast until soft, about 20 more minutes."],
+    notes: "Vegetarian. Only 20 calories — a simple, elegant side dish. Just 3 ingredients."
+  },
+  {
+    id: 108, name: "Roasted Corn Chowder", source: "Canyon Ranch",
+    time: "1 hr", difficulty: "Easy", servings: "6 (6 oz each)", calories: 150,
+    category: "Soup",
+    nutrition: {carbs: "33g", protein: "3g", fat: "3g", fiber: "1g", sodium: "308mg"},
+    ingredients: ["2/3 cup fresh or frozen corn","2 1/2 tsp canola oil","1 Tbsp minced garlic","1/3 cup chopped yellow onion","2 tsp minced jalape\u00F1o pepper","1/4 cup chopped green chilies","1 Tbsp chopped fresh cilantro","1 1/4 tsp chopped oregano leaves","1 1/4 tsp ground dried basil","1/4 tsp dried red pepper flakes","1 1/4 tsp chili powder","2 1/2 tsp ground cumin","1 2/3 cups water","3 cups cream corn"],
+    instructions: ["Preheat oven to 375\u00B0F. Lightly coat a sheet pan with canola oil spray. Spread corn evenly and roast 5-10 minutes.","In a large saucepan, heat canola oil over medium heat. Add roasted corn, garlic, onions, jalape\u00F1o, and green chilies. Cook until onions are translucent.","Add cilantro and oregano, saut\u00E9 briefly. Add dry herbs and spices, saut\u00E9 30 more seconds.","Add water and cream corn. Cook over medium-low heat 30-45 minutes. Cool. Pur\u00E9e in a blender until smooth."],
+    notes: "Vegetarian. Choose cream corn without added fat or preservatives."
+  },
+  {
+    id: 109, name: "Roasted Chicken with Gravy", source: "Canyon Ranch",
+    time: "2 hrs", difficulty: "Medium", servings: "4", calories: 305,
+    category: "Poultry",
+    nutrition: {carbs: "27g", protein: "26g", fat: "10g", fiber: "6g", sodium: "608mg"},
+    ingredients: ["1 whole 3-4 lb roasting chicken","1/2 cup chopped celery","1/2 cup chopped carrots","1/2 cup chopped yellow onion","1/2 tsp sea salt","1/2 tsp freshly ground black pepper","3 medium potatoes (approx 1 lb)","1/2 cup skim milk","1 tsp minced garlic","2 tsp chopped chives","1/4 tsp sea salt (for potatoes)","1/4 tsp freshly ground black pepper (for potatoes)","2 tsp unsalted butter (for potatoes)","1 tsp canola oil","1 1/2 Tbsp unsalted butter (for gravy)","1/3 cup diced yellow onion (for gravy)","1 1/2 Tbsp all-purpose flour","1 cup chicken broth","pinch freshly ground black pepper (for gravy)","1/2 tsp chopped fresh sage"],
+    instructions: ["Preheat oven to 350\u00B0F. Mix celery, carrots, and onions. Stuff chicken with vegetable mixture. Season with salt and pepper.","Place in a roasting pan, cover, and roast 1-1.5 hours until juices run clear. Cut in half, remove back, ribs, wings, and drumstick. Separate thigh and breast, remove skin.","For mashed potatoes: Peel and cube potatoes. Boil 10-15 minutes until tender. Drain. Add milk, garlic, chives, salt, pepper, and butter. Whip until smooth.","For gravy: Saut\u00E9 onions in canola oil and butter until translucent. Add flour, cook 3-5 minutes. Add broth and whisk until it boils and thickens. Add pepper and sage. Strain.","Serve 4 oz chicken with 1/3 cup mashed potatoes and 1/4 cup gravy."],
+    notes: "A complete comfort food dinner — includes garlic mashed potatoes and sage gravy."
+  },
+  {
+    id: 110, name: "Red Chili Chicken Quesadilla", source: "Canyon Ranch",
+    time: "30 min", difficulty: "Easy", servings: "4", calories: 440,
+    category: "Poultry",
+    nutrition: {carbs: "40g", protein: "36g", fat: "16g", fiber: "5g", sodium: "700mg"},
+    ingredients: ["4 whole-wheat tortillas (10-inch)","1/2 cup shredded low-fat Monterey Jack cheese","1/2 cup roasted poblano peppers, skinned, seeded, and diced","4 cups mixed spring greens","1/4 cup diced yellow onions","1 tsp canola oil","3 boneless, skinless chicken breasts (4 oz each), diced","1/2 tsp sea salt","1/4 tsp freshly ground black pepper","1 tsp garlic granules","1/2 tsp ground cumin","1 Tbsp chili powder","2 cups low-sodium chicken stock","1 bay leaf","3 Tbsp all-purpose flour"],
+    instructions: ["In a large saut\u00E9 pan over medium heat, saut\u00E9 onions in canola oil until translucent. Add diced chicken and cook through.","Add salt, pepper, garlic granules, cumin, chili powder, chicken stock, and bay leaf. Cook until liquid is reduced by half. Add flour and cook until thickened. Remove bay leaf.","Spoon 1/2 cup red chili chicken on one half of each tortilla. Spread 2 Tbsp cheese and 2 Tbsp roasted peppers over chicken. Fold in half.","Place on hot grill pan or under broiler, turning once, until cheese is melted.","Cut each quesadilla into quarters. Serve with 1 cup mixed greens."],
+    notes: "Whole-wheat tortillas and low-fat cheese keep it lighter. The red chili chicken filling is hearty and flavorful."
+  }
+];
+
+const CATEGORIES = ["All", "Poultry", "Beef", "Seafood", "Soup", "Salad", "Vegetable", "Side Dish", "Sauce/Dressing", "Breakfast", "Bread/Baking", "Dessert", "Beverage"];
+
+function App() {
+  const [recipes, setRecipes] = useState(() => {
+    try { return window._recipeData || INITIAL_RECIPES; } catch { return INITIAL_RECIPES; }
+  });
+  const [activeTab, setActiveTab] = useState("browse");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [shoppingList, setShoppingList] = useState([]);
+  const [checkedItems, setCheckedItems] = useState({});
+  const [pantryItems, setPantryItems] = useState([]);
+  const [pantryInput, setPantryInput] = useState("");
+  const [toast, setToast] = useState(null);
+  const [checkedIngredients, setCheckedIngredients] = useState({});
+
+  useEffect(() => { window._recipeData = recipes; }, [recipes]);
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 2000); };
+
+  const filtered = useMemo(() => {
+    let list = recipes;
+    if (category !== "All") list = list.filter(r => r.category === category);
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(r =>
+        r.name.toLowerCase().includes(q) ||
+        r.ingredients.some(i => i.toLowerCase().includes(q)) ||
+        r.category.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [recipes, category, search]);
+
+  const pantryMatches = useMemo(() => {
+    if (pantryItems.length === 0) return [];
+    return recipes.map(r => {
+      const matched = pantryItems.filter(p =>
+        r.ingredients.some(i => i.toLowerCase().includes(p.toLowerCase()))
+      );
+      return { ...r, matchCount: matched.length, matchedItems: matched };
+    }).filter(r => r.matchCount > 0).sort((a, b) => b.matchCount - a.matchCount);
+  }, [recipes, pantryItems]);
+
+  const addToShoppingList = (recipe) => {
+    if (shoppingList.find(r => r.id === recipe.id)) { showToast("Already on your list"); return; }
+    setShoppingList(prev => [...prev, recipe]);
+    showToast("Added to shopping list");
+  };
+
+  const removeFromShoppingList = (id) => {
+    setShoppingList(prev => prev.filter(r => r.id !== id));
+    const nc = {...checkedItems};
+    Object.keys(nc).forEach(k => { if (k.startsWith(id + "-")) delete nc[k]; });
+    setCheckedItems(nc);
+  };
+
+  const addPantryItem = () => {
+    const item = pantryInput.trim();
+    if (item && !pantryItems.includes(item)) { setPantryItems(prev => [...prev, item]); setPantryInput(""); }
+  };
+
+  const addRecipe = (nr) => {
+    setRecipes(prev => [...prev, {...nr, id: Date.now(), source: "My Recipe"}]);
+    showToast("Recipe saved!");
+    setActiveTab("browse");
+  };
+
+  const e = React.createElement;
+
+  return e("div", {className: "app-container"},
+
+    // Header
+    activeTab === "browse" && e("div", {className: "header"},
+      e("div", {className: "header-top"},
+        e("h1", null, "Recipe Box"),
+        e("span", {className: "header-sub"}, recipes.length + " recipes")
+      ),
+      e("div", {className: "search-bar"},
+        e("div", {className: "search-wrap"},
+          e("span", {className: "search-icon"}, "\u{1F50D}"),
+          e("input", {
+            type: "text",
+            placeholder: "Search recipes or ingredients\u2026",
+            value: search,
+            onChange: ev => setSearch(ev.target.value)
+          })
+        )
+      ),
+      e("div", {style: {height: "16px"}})
+    ),
+
+    // Tab bar
+    e("div", {className: "tab-bar"},
+      [{id:"browse", icon:"\u{1F4D6}", label:"Recipes"},
+       {id:"pantry", icon:"\u{1F96C}", label:"On Hand"},
+       {id:"shopping", icon:"\u{1F6D2}", label:"Shop"},
+       {id:"add", icon:"\u2795", label:"Add New"}
+      ].map(t => e("button", {
+        key: t.id,
+        className: "tab" + (activeTab === t.id ? " active" : ""),
+        onClick: () => setActiveTab(t.id)
+      }, e("span", {className: "tab-icon"}, t.icon), t.label))
+    ),
+
+    // Browse
+    activeTab === "browse" && e(React.Fragment, null,
+      e("div", {className: "filter-row"},
+        CATEGORIES.map(cat => e("button", {
+          key: cat,
+          className: "chip" + (category === cat ? " active" : ""),
+          onClick: () => setCategory(cat)
+        }, cat))
+      ),
+      e("div", {className: "recipe-count"}, filtered.length + " recipe" + (filtered.length !== 1 ? "s" : "")),
+      e("div", {className: "recipe-list"},
+        filtered.map(r => e("div", {
+          key: r.id, className: "recipe-card",
+          onClick: () => { setSelectedRecipe(r); setCheckedIngredients({}); }
+        },
+          e("div", {className: "recipe-card-header"},
+            e("h3", null, r.name),
+            r.calories > 0 && e("span", {className: "calories"}, r.calories + " cal")
+          ),
+          e("div", {className: "recipe-meta"},
+            e("span", {className: "meta-tag"}, "\u{1F552} " + r.time),
+            e("span", {className: "meta-tag"}, r.difficulty),
+            e("span", {className: "meta-tag"}, "Serves " + r.servings)
+          ),
+          e("div", {className: "recipe-tags"},
+            e("span", {className: "recipe-tag"}, r.category),
+            e("span", {className: "recipe-tag source-tag"}, r.source)
+          )
+        )),
+        filtered.length === 0 && e("div", {className: "empty-state"},
+          e("div", {className: "empty-icon"}, "\u{1F50D}"),
+          e("p", null, "No recipes found. Try a different search or category.")
+        )
+      )
+    ),
+
+    // Pantry
+    activeTab === "pantry" && e("div", {className: "pantry-section"},
+      e("div", {className: "section-title"}, "What\u2019s On Hand?"),
+      e("p", {className: "section-desc"}, "Add ingredients you have and find recipes you can make right now."),
+      e("div", {className: "pantry-input-row"},
+        e("input", {
+          className: "pantry-input",
+          placeholder: "e.g. chicken, garlic, miso\u2026",
+          value: pantryInput,
+          onChange: ev => setPantryInput(ev.target.value),
+          onKeyDown: ev => ev.key === "Enter" && addPantryItem()
+        }),
+        e("button", {className: "pantry-add-btn", onClick: addPantryItem}, "Add")
+      ),
+      pantryItems.length > 0 && e("div", {className: "pantry-tags"},
+        pantryItems.map((item, i) => e("span", {key: i, className: "pantry-tag"},
+          item,
+          e("button", {onClick: () => setPantryItems(prev => prev.filter((_, j) => j !== i))}, "\u00D7")
+        ))
+      ),
+      pantryMatches.length > 0 && e(React.Fragment, null,
+        e("div", {className: "section-title", style: {fontSize: "18px", marginTop: "8px"}}, "Matching Recipes"),
+        e("div", {className: "recipe-list", style: {padding: 0, marginTop: "12px"}},
+          pantryMatches.map(r => e("div", {
+            key: r.id, className: "recipe-card",
+            onClick: () => { setSelectedRecipe(r); setCheckedIngredients({}); }
+          },
+            e("div", {className: "recipe-card-header"},
+              e("h3", null, r.name),
+              e("span", {className: "match-badge"}, r.matchCount + "/" + pantryItems.length)
+            ),
+            e("div", {className: "recipe-meta"},
+              e("span", {className: "meta-tag"}, "\u{1F552} " + r.time),
+              r.calories > 0 && e("span", {className: "meta-tag"}, r.calories + " cal")
+            ),
+            e("div", {className: "recipe-tags"},
+              r.matchedItems.map((m, i) => e("span", {key: i, className: "recipe-tag"}, "\u2713 " + m))
+            )
+          ))
+        )
+      ),
+      pantryItems.length > 0 && pantryMatches.length === 0 && e("div", {className: "empty-state"},
+        e("div", {className: "empty-icon"}, "\u{1F937}"),
+        e("p", null, "No matching recipes found. Try adding more or different ingredients.")
+      )
+    ),
+
+    // Shopping
+    activeTab === "shopping" && e("div", {className: "shopping-section"},
+      e("div", {className: "section-title"}, "Shopping List"),
+      shoppingList.length === 0 ?
+        e("div", {className: "empty-state"},
+          e("div", {className: "empty-icon"}, "\u{1F6D2}"),
+          e("p", null, "Your shopping list is empty. Browse recipes and tap \u201CAdd to Shopping List\u201D to get started.")
+        ) :
+        e(React.Fragment, null,
+          e("p", {className: "section-desc"}, shoppingList.length + " recipe" + (shoppingList.length !== 1 ? "s" : "") + " \u2014 tap items to check them off"),
+          shoppingList.map(recipe => e("div", {key: recipe.id, className: "shopping-recipe-group"},
+            e("div", {className: "shopping-recipe-name"},
+              e("span", null, recipe.name),
+              e("button", {className: "remove-recipe-btn", onClick: () => removeFromShoppingList(recipe.id)}, "\u2715")
+            ),
+            recipe.ingredients.map((ing, i) => {
+              const key = recipe.id + "-" + i;
+              const checked = checkedItems[key];
+              return e("div", {
+                key: key,
+                className: "shopping-item" + (checked ? " crossed" : ""),
+                onClick: () => setCheckedItems(prev => ({...prev, [key]: !prev[key]}))
+              },
+                e("div", {className: "ingredient-check" + (checked ? " checked" : "")}, checked && "\u2713"),
+                e("span", null, ing)
+              );
+            })
+          )),
+          e("button", {className: "clear-list-btn", onClick: () => { setShoppingList([]); setCheckedItems({}); }}, "Clear Entire List")
+        )
+    ),
+
+    // Add recipe
+    activeTab === "add" && e(AddRecipeForm, {onSave: addRecipe}),
+
+    // Detail overlay
+    selectedRecipe && e(RecipeDetail, {
+      recipe: selectedRecipe,
+      onClose: () => setSelectedRecipe(null),
+      onAddToList: addToShoppingList,
+      isInList: shoppingList.some(r => r.id === selectedRecipe.id),
+      checkedIngredients, setCheckedIngredients
+    }),
+
+    toast && e("div", {className: "toast"}, toast)
+  );
+}
+
+function RecipeDetail({recipe, onClose, onAddToList, isInList, checkedIngredients, setCheckedIngredients}) {
+  const e = React.createElement;
+  const toggleIng = (i) => setCheckedIngredients(prev => ({...prev, [i]: !prev[i]}));
+
+  return e("div", {className: "detail-overlay"},
+    e("div", {className: "detail-header"},
+      e("button", {className: "back-btn", onClick: onClose}, "\u2190"),
+      e("h2", null, recipe.name)
+    ),
+    e("div", {className: "detail-body"},
+      // Hero
+      e("div", {className: "detail-hero"},
+        e("div", {className: "detail-meta-row"},
+          e("div", {className: "detail-meta-item"}, e("span", {className: "value"}, recipe.time), e("span", {className: "label"}, "Time")),
+          e("div", {className: "detail-meta-item"}, e("span", {className: "value"}, recipe.difficulty), e("span", {className: "label"}, "Difficulty")),
+          recipe.calories > 0 && e("div", {className: "detail-meta-item"}, e("span", {className: "value"}, recipe.calories), e("span", {className: "label"}, "Calories")),
+          e("div", {className: "detail-meta-item"}, e("span", {className: "value"}, recipe.servings), e("span", {className: "label"}, "Serves"))
+        )
+      ),
+
+      // Nutrition
+      recipe.nutrition && recipe.calories > 0 && e("div", {className: "detail-section"},
+        e("h3", null, "Nutrition Per Serving"),
+        e("div", {className: "nutrition-grid"},
+          e("div", {className: "nutrition-item"}, e("div", {className: "n-val"}, recipe.nutrition.protein), e("div", {className: "n-label"}, "Protein")),
+          e("div", {className: "nutrition-item"}, e("div", {className: "n-val"}, recipe.nutrition.carbs), e("div", {className: "n-label"}, "Carbs")),
+          e("div", {className: "nutrition-item"}, e("div", {className: "n-val"}, recipe.nutrition.fat), e("div", {className: "n-label"}, "Fat")),
+          e("div", {className: "nutrition-item"}, e("div", {className: "n-val"}, recipe.nutrition.fiber), e("div", {className: "n-label"}, "Fiber")),
+          e("div", {className: "nutrition-item"}, e("div", {className: "n-val"}, recipe.nutrition.sodium), e("div", {className: "n-label"}, "Sodium"))
+        )
+      ),
+
+      // Ingredients
+      e("div", {className: "detail-section"},
+        e("h3", null, "Ingredients"),
+        recipe.ingredients.map((ing, i) => e("div", {
+          key: i, className: "ingredient-item", onClick: () => toggleIng(i)
+        },
+          e("div", {className: "ingredient-check" + (checkedIngredients[i] ? " checked" : "")}, checkedIngredients[i] && "\u2713"),
+          e("span", {style: checkedIngredients[i] ? {textDecoration: "line-through", color: "var(--text-tertiary)"} : {}}, ing)
+        ))
+      ),
+
+      // Instructions
+      e("div", {className: "detail-section"},
+        e("h3", null, "Instructions"),
+        recipe.instructions.map((step, i) => e("div", {key: i, className: "instruction-item"},
+          e("span", {className: "step-num"}, i + 1),
+          e("span", null, step)
+        ))
+      ),
+
+      recipe.notes && e("div", {className: "cook-note"}, recipe.notes),
+
+      e("button", {
+        className: "add-to-list-btn" + (isInList ? " added-btn" : ""),
+        onClick: () => onAddToList(recipe),
+        style: {marginTop: "20px"}
+      }, isInList ? "\u2713 On Shopping List" : "Add to Shopping List"),
+
+      e("div", {className: "source-line"}, recipe.source)
+    )
+  );
+}
+
+function AddRecipeForm({onSave}) {
+  const e = React.createElement;
+  const [name, setName] = useState("");
+  const [time, setTime] = useState("");
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [servings, setServings] = useState("");
+  const [calories, setCalories] = useState("");
+  const [cat, setCat] = useState("Poultry");
+  const [ingredients, setIngredients] = useState("");
+  const [instructions, setInstructions] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const handleSave = () => {
+    if (!name.trim() || !ingredients.trim()) return;
+    onSave({
+      name: name.trim(), time: time || "N/A", difficulty,
+      servings: servings || "N/A", calories: parseInt(calories) || 0, category: cat,
+      nutrition: {carbs: "-", protein: "-", fat: "-", fiber: "-", sodium: "-"},
+      ingredients: ingredients.split("\n").map(s => s.trim()).filter(Boolean),
+      instructions: instructions.split("\n").map(s => s.trim()).filter(Boolean),
+      notes: notes.trim()
+    });
+    setName(""); setTime(""); setServings(""); setCalories("");
+    setIngredients(""); setInstructions(""); setNotes("");
+  };
+
+  return e("div", {className: "form-section"},
+    e("div", {className: "section-title", style: {marginBottom: "16px"}}, "Add a New Recipe"),
+    e("div", {className: "form-group"},
+      e("label", null, "Recipe Name *"),
+      e("input", {value: name, onChange: ev => setName(ev.target.value), placeholder: "e.g. Grandma's Chicken Soup"})
+    ),
+    e("div", {className: "form-row"},
+      e("div", {className: "form-group"}, e("label", null, "Time"), e("input", {value: time, onChange: ev => setTime(ev.target.value), placeholder: "30 min"})),
+      e("div", {className: "form-group"}, e("label", null, "Servings"), e("input", {value: servings, onChange: ev => setServings(ev.target.value), placeholder: "4"}))
+    ),
+    e("div", {className: "form-row"},
+      e("div", {className: "form-group"}, e("label", null, "Difficulty"),
+        e("select", {value: difficulty, onChange: ev => setDifficulty(ev.target.value)},
+          ["Easy", "Moderate", "Advanced"].map(d => e("option", {key: d, value: d}, d))
+        )),
+      e("div", {className: "form-group"}, e("label", null, "Calories"),
+        e("input", {type: "number", value: calories, onChange: ev => setCalories(ev.target.value), placeholder: "200"}))
+    ),
+    e("div", {className: "form-group"}, e("label", null, "Category"),
+      e("select", {value: cat, onChange: ev => setCat(ev.target.value)},
+        CATEGORIES.filter(c => c !== "All").map(c => e("option", {key: c, value: c}, c))
+      )),
+    e("div", {className: "form-group"},
+      e("label", null, "Ingredients * (one per line)"),
+      e("textarea", {value: ingredients, onChange: ev => setIngredients(ev.target.value), placeholder: "1 cup flour\n2 eggs\n1/2 cup sugar"})
+    ),
+    e("div", {className: "form-group"},
+      e("label", null, "Instructions (one step per line)"),
+      e("textarea", {value: instructions, onChange: ev => setInstructions(ev.target.value), placeholder: "Preheat oven to 350\u00B0F.\nMix dry ingredients.\nAdd wet ingredients and stir."})
+    ),
+    e("div", {className: "form-group"},
+      e("label", null, "Cook's Notes"),
+      e("textarea", {value: notes, onChange: ev => setNotes(ev.target.value), placeholder: "Tips, substitutions, variations\u2026", style: {minHeight: "70px"}})
+    ),
+    e("button", {className: "save-recipe-btn", onClick: handleSave}, "Save Recipe")
+  );
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById("root"));
+</script>
+</body>
+</html>
